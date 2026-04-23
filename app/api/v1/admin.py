@@ -1,0 +1,125 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
+
+from app.models.member import Member
+from app.services.admin_service import AdminService
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.schemas.admin import *
+from app.services.admin_service import AdminExtraService
+from app.core.dependencies import get_current_admin
+
+router = APIRouter(
+    prefix="/admin",
+    tags=["Admin"]
+)
+
+@router.get("/dashboard")
+def dashboard(
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_admin)
+):
+    return AdminService.dashboard_stats(db)
+
+
+
+
+@router.get("/employees")
+def get_employees(
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_admin)
+):
+    return AdminService.list_users(db, "employee")
+
+
+@router.get("/students")
+def get_students(
+    db: Session = Depends(get_db)
+):
+    return AdminService.list_users(db, "student")   
+
+
+@router.get("/representatives")
+def get_representatives(
+    db: Session = Depends(get_db)
+):
+    return AdminService.list_users(db, "representative")
+
+
+@router.post("/approve/{user_id}")
+def approve_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_admin)
+):
+    return AdminService.approve_user(db, user_id)
+
+
+@router.put("/reject/{user_id}")
+def reject_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    return AdminService.reject_user(db, user_id)
+
+
+@router.delete("/member/{member_id}")
+def delete_member(member_id: int, db: Session = Depends(get_db)):
+    
+    member = db.query(Member).filter(Member.id == member_id).first()
+
+    #  handle not found
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    try:
+        db.delete(member)
+        db.commit()
+        return {"message": "Member deleted successfully"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+'''@router.post("/board-members")
+def create_member(payload: BoardMemberCreate, db: Session = Depends(get_db)):
+    return AdminExtraService.create_member(db, payload)
+
+
+@router.get("/board-members")
+def list_members(db: Session = Depends(get_db)):
+    return AdminExtraService.get_members(db)
+
+
+@router.delete("/board-members/{id}")
+def delete_member(id: int, db: Session = Depends(get_db)):
+    return AdminExtraService.delete_member(db, id)
+@router.post("/benefits")
+def create_benefit(payload: BenefitCreate, db: Session = Depends(get_db)):
+    return AdminExtraService.create_benefit(db, payload)
+
+
+@router.get("/benefits/{role}")
+def get_benefits(role: str, db: Session = Depends(get_db)):
+    return AdminExtraService.get_benefits(db, role)
+
+
+@router.delete("/benefits/{id}")
+def delete_benefit(id: int, db: Session = Depends(get_db)):
+    return AdminExtraService.delete_benefit(db, id)
+@router.post("/black-profile")
+def create_black_profile(payload: BlackProfileCreate, db: Session = Depends(get_db)):
+    return AdminExtraService.create_black_profile(db, payload)
+
+
+@router.get("/black-profile")
+def list_black_profiles(db: Session = Depends(get_db)):
+    return AdminExtraService.get_black_profiles(db)
+
+
+@router.delete("/black-profile/{id}")
+def delete_black_profile(id: int, db: Session = Depends(get_db)):
+    return AdminExtraService.delete_black_profile(db, id)'''
