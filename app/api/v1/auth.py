@@ -25,35 +25,7 @@ from fastapi import APIRouter, Depends, HTTPException
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-# ================= ADMIN REGISTER =================
-@router.post("/register-admin")
-def register_admin(payload: RegisterAdminRequest, db: Session = Depends(get_db)):
 
-    user = db.query(Member).filter(Member.email == payload.email).first()
-    if user:
-        raise HTTPException(status_code=400, detail="Admin already exists")
-
-    membership_id = generate_membership_id(db, "admin")
-
-    member = Member(
-        membership_id=membership_id,
-        full_name=payload.full_name,
-        email=payload.email,
-        password_hash=hash_password(payload.password),  # MUST HASH
-        candidate_type="admin",
-        role="admin"   
-    )
-
-    db.add(member)
-    db.commit()
-    db.refresh(member)
-
-    print(" ADMIN CREATED:", member.email)
-
-    return {
-        "message": "Admin created successfully",
-        "membership_id": membership_id
-    }
 # ================= NORMAL REGISTER =================
 
 
@@ -79,7 +51,10 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     # ==============================
     # ROLE ASSIGNMENT
     # ==============================
-    role = "admin" if payload.candidate_type == "admin" else "user"
+    if payload.candidate_type == "admin":
+        raise HTTPException(status_code=403, detail="Admin registration is not allowed")
+
+    role = "user"
 
     # ==============================
     # EMPLOYEE → OTP VALIDATION
@@ -154,6 +129,27 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         "message": "User registered successfully",
         "membership_id": membership_id,
         "role": role
+    }
+# ============== admin login ========================
+@router.post("/admin/login")
+def admin_login(payload: LoginRequest, db: Session = Depends(get_db)):
+
+    user = db.query(Member).filter(
+        Member.email == payload.email,
+        Member.role == "admin"
+    ).first()
+
+    if not user or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+    token = create_access_token({
+        "sub": user.email,
+        "role": user.role
+    })
+
+    return {
+        "access_token": token,
+        "token_type": "bearer"
     }
 # ================= LOGIN =================
 
