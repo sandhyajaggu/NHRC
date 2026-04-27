@@ -24,11 +24,11 @@ class StudentUniversityDetails(Base):
 
     location = Column(String, nullable=False)
 
-    # 🔐 login fields
+    #  login fields
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
 
-    # 📂 file uploads
+    #  file uploads
     id_front = Column(String)
     id_back = Column(String)
 
@@ -53,10 +53,10 @@ class StudentAutonomousDetails(Base):
 
     location = Column(String, nullable=False)
 
-    # 🔐 login
+    #  login
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
 
-    # 📂 uploads
+    #  uploads
     id_front = Column(String)
     id_back = Column(String)

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from app.db.base import Base   # make sure this works (we fix below)
+from app.core.database import Base
 
 class BoardMember(Base):
     __tablename__ = "board_members"

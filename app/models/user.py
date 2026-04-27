@@ -1,7 +1,13 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
 from datetime import datetime
 from app.core.database import Base
+import enum
 
+class UserRole(str, enum.Enum):
+    admin = "admin"
+    employee = "employee"
+    student = "student"
+    representative = "representative"
 
 class User(Base):
     __tablename__ = "users"
@@ -16,16 +22,7 @@ class User(Base):
 
     password = Column(String)
 
-    role = Column(
-        Enum(
-            "admin",
-            "employee",
-            "student",
-            "representative",
-            name="user_roles"
-        ),
-        nullable=False
-    )
+    role = Column(Enum(UserRole), nullable=False)
 
     membership_id = Column(String, unique=True)
 
@@ -35,10 +32,3 @@ class User(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
-import enum
-
-class UserRole(str, enum.Enum):
-    admin = "admin"
-    employee = "employee"
-    student = "student"
-    representative = "representative"

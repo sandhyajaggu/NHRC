@@ -90,7 +90,7 @@ def delete_member(
 
 
 # ================= EXTRA ADMIN FEATURES =================
-'''@router.post("/board-members")
+@router.post("/board-members")
 def create_member(
     payload: BoardMemberCreate,
     db: Session = Depends(get_db),
@@ -166,4 +166,4 @@ def delete_black_profile(
     db: Session = Depends(get_db),
     admin: Member = Depends(get_current_admin)
 ):
-    return AdminExtraService.delete_black_profile(db, id)'''
+    return AdminExtraService.delete_black_profile(db, id)

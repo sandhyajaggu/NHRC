@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text
-from app.db.base import Base
+from app.core.database import Base
 
 
 class BlackProfile(Base):

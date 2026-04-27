@@ -95,4 +95,4 @@ class AdminRepository:
             db.delete(user)
             db.commit()
 
-        return Trues
+        return True
