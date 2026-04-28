@@ -1,20 +1,18 @@
+from app.models.member import Member
+from app.models.user import User, UserRole
+from app.core.security import hash_password
+import random
+import string
 from sqlalchemy.orm import Session
+
+
 from app.repositories.admin_repository import AdminRepository
-from app.models.board_member import BoardMember
-from app.models.member_benefit import MemberBenefit
-from app.models.black_profile import BlackProfile
-from app.models.employee import Employee
-from app.models.student import StudentUniversityDetails, StudentAutonomousDetails
-from app.models.contact import ContactMessage
-from app.models.representative import (
-    RepresentativeUniversityDetails,
-    RepresentativeAutonomousDetails,
-    RepresentativeBothDetails 
-)
 
 
+def generate_password(length=8):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
-# ================= MAIN ADMIN =================
+
 class AdminService:
 
     @staticmethod
@@ -37,116 +35,47 @@ class AdminService:
     def delete_user(db: Session, user_id: int):
         return AdminRepository.delete_user(db, user_id)
 
-
-# ================= EXTRA ADMIN =================
-class AdminExtraService:
-
-    # ---------------- BOARD MEMBERS ----------------
+    # NEW FUNCTION (STEP 3)
     @staticmethod
-    def create_member(db: Session, data):
-        member = BoardMember(**data.dict())
-        db.add(member)
+    def approve_member(db: Session, member_id: int):
+
+        # 1. Get member
+        member = db.query(Member).filter(Member.id == member_id).first()
+
+        if not member:
+            raise Exception("Member not found")
+
+        # 2. Check already exists in users
+        existing_user = db.query(User).filter(User.email == member.email).first()
+        if existing_user:
+            raise Exception("User already exists")
+
+        # 3. Generate password
+        raw_password = generate_password()
+        hashed_password = hash_password(raw_password)
+
+        # 4. Create user
+        user = User(
+            full_name=member.full_name,
+            email=member.email,
+            mobile=member.mobile,
+            password=hashed_password,
+            role=UserRole.member,   
+            membership_id=member.membership_id,
+            is_active=True,
+            is_approved=True
+        )
+
+        db.add(user)
+
+        # 5. Optional: mark member approved
+        # (add column if needed)
+        # member.is_approved = True
+
         db.commit()
-        db.refresh(member)
-        return member
 
-    @staticmethod
-    def get_members(db: Session):
-        return db.query(BoardMember).all()
-
-    @staticmethod
-    def delete_member(db: Session, member_id: int):
-        member = db.get(BoardMember, member_id)
-        if member:
-            db.delete(member)
-            db.commit()
-        return True
-
-
-    # ---------------- BENEFITS ----------------
-    @staticmethod
-    def create_benefit(db: Session, data):
-        benefit = MemberBenefit(**data.dict())
-        db.add(benefit)
-        db.commit()
-        db.refresh(benefit)
-        return benefit
-
-    @staticmethod
-    def get_benefits(db: Session, role: str):
-        return db.query(MemberBenefit).filter(MemberBenefit.role == role).all()
-
-    @staticmethod
-    def delete_benefit(db: Session, benefit_id: int):
-        #benefit = db.get(MemberBenefit, benefit_id)
-        benefit = db.get(MemberBenefit, benefit_id)
-        if benefit:
-            db.delete(benefit)
-            db.commit()
-        return True
-
-
-    # ---------------- BLACK PROFILE ----------------
-    @staticmethod
-    def create_black_profile(db: Session, data):
-        profile = BlackProfile(**data.dict())
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
-        return profile
-
-    @staticmethod
-    def get_black_profiles(db: Session):
-        return db.query(BlackProfile).all()
-
-    @staticmethod
-    def delete_black_profile(db: Session, profile_id: int):
-        #profile = db.get(BlackProfile, profile_id)
-        profile = db.get(BlackProfile, profile_id)
-        if profile:
-            db.delete(profile)
-            db.commit()
-        return True
-    
-
-
-
-class AdminDashboardService:
-
-    @staticmethod
-    def get_dashboard(db: Session):
         return {
-            "employees": db.query(Employee).count(),
-            "students": (
-                db.query(StudentUniversityDetails).count() +
-                db.query(StudentAutonomousDetails).count()
-            ),
-            "representatives": (
-                db.query(RepresentativeUniversityDetails).count() +
-                db.query(RepresentativeAutonomousDetails).count()
-            ),
-            "contacts_pending": db.query(ContactMessage).filter(
-                ContactMessage.status == "pending"
-            ).count(),
-            "contacts_resolved": db.query(ContactMessage).filter(
-                ContactMessage.status == "resolved"
-            ).count(),
+            "message": "Member approved successfully",
+            "email": member.email,
+            "password": raw_password
         }
-    
-from sqlalchemy import or_
-
-class AdminFilterService:
-
-    @staticmethod
-    def search_members(db: Session, search: str = None):
-        query = db.query(BoardMember)
-
-        if search:
-            query = query.filter(
-                or_(
-                    BoardMember.name.ilike(f"%{search}%"),
-                    BoardMember.designation.ilike(f"%{search}%")
-                )
-            )
-
-        return query.all()

@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from app.models.employee import Employee
 from app.core.security import hash_password
 
@@ -7,15 +9,15 @@ class EmployeeService:
     @staticmethod
     def create_employee(db, payload):
 
-        # ✅ password match
+        # password match
         if payload.password != payload.confirm_password:
             raise HTTPException(400, "Passwords do not match")
 
-        # ✅ captcha validation (frontend should send correct one)
+        #  captcha validation (frontend should send correct one)
         if payload.captcha_answer <= 0:
             raise HTTPException(400, "Invalid captcha")
 
-        # ✅ OTP validation (dummy for now)
+        #  OTP validation (dummy for now)
         if payload.email_otp != "123456":
             raise HTTPException(400, "Invalid OTP")
 

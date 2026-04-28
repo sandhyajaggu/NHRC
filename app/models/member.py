@@ -19,5 +19,5 @@ class Member(Base):
     role = Column(String, default="user")
     whatsapp_notification = Column(Boolean, default=False)
     candidate_type = Column(String(50), nullable=True)
-    password_hash = Column(String, nullable=False)
+    password_hash = Column(String, nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now())

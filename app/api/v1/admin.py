@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.board_member import BoardMember
 from app.models.member import Member
+from app.models.user import User
 from app.services.admin_service import AdminService
-from app.services.admin_service import AdminExtraService
 from app.schemas.admin import *
 
-from app.core.dependencies import get_current_admin  # ✅ IMPORTANT
+from app.core.dependencies import get_current_admin  
 
 router = APIRouter(
     prefix="/admin",
@@ -36,7 +36,7 @@ def get_employees(
 @router.get("/students")
 def get_students(
     db: Session = Depends(get_db),
-    admin: Member = Depends(get_current_admin)   # ✅ FIXED
+    admin: Member = Depends(get_current_admin)  
 ):
     return AdminService.list_users(db, "student")
 
@@ -44,26 +44,26 @@ def get_students(
 @router.get("/representatives")
 def get_representatives(
     db: Session = Depends(get_db),
-    admin: Member = Depends(get_current_admin)   # ✅ FIXED
+    admin: Member = Depends(get_current_admin)   
 ):
     return AdminService.list_users(db, "representative")
 
 
 # ================= APPROVAL =================
-@router.post("/approve/{user_id}")
-def approve_user(
-    user_id: int,
+@router.post("/approve-member/{member_id}")
+def approve_member(
+    member_id: int,
     db: Session = Depends(get_db),
-    admin: Member = Depends(get_current_admin)
+    current_admin: User = Depends(get_current_admin)
 ):
-    return AdminService.approve_user(db, user_id)
+    return AdminService.approve_member(db, member_id)
 
 
 @router.put("/reject/{user_id}")
 def reject_user(
     user_id: int,
     db: Session = Depends(get_db),
-    admin: Member = Depends(get_current_admin)   # ✅ FIXED
+    admin: Member = Depends(get_current_admin)   
 ):
     return AdminService.reject_user(db, user_id)
 
@@ -73,7 +73,7 @@ def reject_user(
 def delete_member(
     member_id: int,
     db: Session = Depends(get_db),
-    admin: Member = Depends(get_current_admin)   # ✅ FIXED
+    admin: Member = Depends(get_current_admin)   
 ):
     member = db.query(Member).filter(Member.id == member_id).first()
 
