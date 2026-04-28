@@ -36,9 +36,8 @@ from app.core.security import get_current_user
 def create_personal(
     payload: MemberCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)  #  ADD THIS
 ):
-    return MemberService.create_member(db, payload, current_user)
+    return MemberService.create_member(db, payload)
 
 @router.post("/employee-details")
 def create_employee(
