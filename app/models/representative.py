@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-from app.core.database import Base
+from app.db.base import Base
 
 
 class RepresentativeUniversityDetails(Base):

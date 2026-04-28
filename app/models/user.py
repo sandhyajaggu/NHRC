@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
 from datetime import datetime
-from app.core.database import Base
+from app.db.base import Base
 import enum
 
 class UserRole(str, enum.Enum):
@@ -22,7 +22,8 @@ class User(Base):
 
     password = Column(String)
 
-    role = Column(Enum(UserRole), nullable=False)
+    #role = Column(Enum(UserRole), nullable=False)
+    role = Column(Enum(UserRole, name="user_roles"), nullable=False)
 
     membership_id = Column(String, unique=True)
 

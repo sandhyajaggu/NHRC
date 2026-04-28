@@ -23,8 +23,7 @@ SessionLocal = sessionmaker(
     autocommit=False
 )
 
-#  Base model
-Base = declarative_base()
+
 
 
 #  Dependency

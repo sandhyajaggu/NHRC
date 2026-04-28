@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
+from app.models.board_member import BoardMember
 from app.models.member import Member
 from app.services.admin_service import AdminService
 from app.services.admin_service import AdminExtraService
@@ -90,21 +91,52 @@ def delete_member(
 
 
 # ================= EXTRA ADMIN FEATURES =================
-@router.post("/board-members")
-def create_member(
-    payload: BoardMemberCreate,
+import os
+
+UPLOAD_DIR = "uploads/board_members"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+@router.post("/board-members/upload")
+def create_board_member_with_image(
+    full_name: str,
+    professional_title: str = None,
+    current_position: str = None,
+    linkedin_url: str = None,
+    twitter_url: str = None,
+    image: UploadFile = File(...),
     db: Session = Depends(get_db),
-    admin: Member = Depends(get_current_admin)
+    current_admin = Depends(get_current_admin)
 ):
-    return AdminExtraService.create_member(db, payload)
+    file_path = f"{UPLOAD_DIR}/{image.filename}"
+
+    with open(file_path, "wb") as f:
+        f.write(image.file.read())
+
+    new_member = BoardMember(
+        full_name=full_name,
+        professional_title=professional_title,
+        current_position=current_position,
+        linkedin_url=linkedin_url,
+        twitter_url=twitter_url,
+        image=file_path
+    )
+
+    db.add(new_member)
+    db.commit()
+    db.refresh(new_member)
+
+    return {
+        "message": "Board member created",
+        "image": file_path
+    }
 
 
 @router.get("/board-members")
-def list_members(
-    db: Session = Depends(get_db),
-    admin: Member = Depends(get_current_admin)
+def get_board_members(
+    db: Session = Depends(get_db)
 ):
-    return AdminExtraService.get_members(db)
+    members = db.query(BoardMember).all()
+    return members
 
 
 @router.delete("/board-members/{id}")

@@ -1,4 +1,3 @@
-'''from sqlalchemy.orm import declarative_base
-from app.models.board_member import BoardMember   
+from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()'''
+Base = declarative_base()

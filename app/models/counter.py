@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from app.core.database import Base
+from app.db.base import Base
 
 class MembershipCounter(Base):
     __tablename__ = "membership_counters"

@@ -4,8 +4,9 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+from app.db.base import Base
+from app.models import *
 
-from app.core.database import Base
 from app.models.member import Member
 from app.models.employee import Employee
 from app.models.student import StudentUniversityDetails, StudentAutonomousDetails
@@ -13,10 +14,19 @@ from app.models.contact import ContactMessage
 from app.models.user import User
 from app.models.otp import OTPVerification
 from app.models.token_blacklist import TokenBlacklist
+from app.models import user, board_member, member_benefit, black_profile
+target_metadata = Base.metadata
 
 config = context.config
+print(" USING DB URL:", settings.DATABASE_URL)
+#config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+import os
 
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+db_url = os.getenv("DATABASE_URL", settings.DATABASE_URL)
+
+print(" USING DB:", db_url)
+
+config.set_main_option("sqlalchemy.url", db_url)
 
 #config.set_main_option(
  #   "sqlalchemy.url",
@@ -26,7 +36,7 @@ config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = Base.metadata
+
 
 
 def run_migrations_offline():

@@ -1,13 +1,14 @@
 import app.models.board_member
 from fastapi import FastAPI
-from app.core.database import Base, engine
+from app.db.base import Base
+from app.core.database import engine
 from app.api.v1 import membership, auth, contact,otp,upload,password_reset,admin
 from app.api.v1.auth import router as auth_router
 from app.models import user, member_benefit, black_profile
 from fastapi.openapi.utils import get_openapi
 from app.models.board_member import BoardMember
 from fastapi.middleware.cors import CORSMiddleware
-
+from app.models import user, board_member, member_benefit, black_profile
 print("DB URL:", engine.url)
 Base.metadata.create_all(bind=engine)
 print("Tables:", Base.metadata.tables.keys())
