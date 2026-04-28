@@ -7,7 +7,7 @@ class MemberRepository:
         member = Member(**payload)
         db.add(member)
         db.commit()
-        db.refresh(member)
+        db.refresh(member)  
         return member
 
     @staticmethod
