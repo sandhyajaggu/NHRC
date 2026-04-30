@@ -1,5 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
+from pydantic import validator
+import re
 
 
 class EmployeeCreate(BaseModel):
@@ -28,5 +30,17 @@ class EmployeeCreate(BaseModel):
     user_email: EmailStr
     password: str
     confirm_password: str
+    @validator("password")
+    def validate_password(cls, v):
+        if len(v) < 6:
+            raise ValueError("Password must be at least 6 chars")
+
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Must contain uppercase")
+
+        if not re.search(r"[0-9]", v):
+            raise ValueError("Must contain number")
+
+        return v
 
     captcha_answer: int
