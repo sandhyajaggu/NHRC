@@ -1,10 +1,12 @@
+from enum import member
+
 from pydantic import BaseModel, EmailStr, validator
 
 
 class StudentUniversityCreate(BaseModel):
     
     membership_id : str
-    member_id: int = None
+    member_id = member.id
 
     university_name: str
     college_name: str
@@ -29,7 +31,7 @@ class StudentUniversityCreate(BaseModel):
 
 class StudentAutonomousCreate(BaseModel):
     membership_id : str
-    member_id: int = None
+    member_id = member.id
     college_name: str
     college_code: str
     qualification: str

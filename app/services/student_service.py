@@ -18,7 +18,7 @@ class StudentService:
 
         # 1. Check member
         member = db.query(Member).filter(
-            Member.id == payload.member_id
+            Member.membership_id == payload.membership_id
         ).first()
 
         if not member:
