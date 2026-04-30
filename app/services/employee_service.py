@@ -1,7 +1,7 @@
 from fastapi import HTTPException
-
 from app.models.employee import Employee
 from app.core.security import hash_password
+from app.utils.email_sender import EmailService
 
 
 class EmployeeService:
@@ -9,18 +9,24 @@ class EmployeeService:
     @staticmethod
     def create_employee(db, payload):
 
-        # password match
+        # Password validation
         if payload.password != payload.confirm_password:
-            raise HTTPException(400, "Passwords do not match")
+            raise HTTPException(status_code=400, detail="Passwords do not match")
 
-        #  captcha validation (frontend should send correct one)
+        #  Captcha validation
         if payload.captcha_answer <= 0:
-            raise HTTPException(400, "Invalid captcha")
+            raise HTTPException(status_code=400, detail="Invalid captcha")
 
-        #  OTP validation (dummy for now)
-        if payload.email_otp != "123456":
-            raise HTTPException(400, "Invalid OTP")
+        # OTP validation (based on OFFICIAL EMAIL)
+        # For now: dummy OTP
+        '''if payload.email_otp != "123456":
+            raise HTTPException(status_code=400, detail="Invalid OTP")'''
+        stored_otp = EmailService.get_otp(payload.official_email)
 
+        if stored_otp != payload.email_otp:
+            raise HTTPException(status_code=400, detail="Invalid OTP")
+
+        # Create employee
         employee = Employee(
             member_id=payload.member_id,
             organization_name=payload.organization_name,
@@ -35,9 +41,15 @@ class EmployeeService:
             id_card_front=payload.id_card_front,
             id_card_back=payload.id_card_back,
             referral_id=payload.referral_id,
+
+            #  OTP-related email
             official_email=payload.official_email,
             email_otp=payload.email_otp,
+
+            #  personal login email (no OTP here)
             user_email=payload.user_email,
+
+            #  store hashed password
             password=hash_password(payload.password)
         )
 
