@@ -19,7 +19,8 @@ class EmailService:
             msg["From"] = settings.EMAIL_USER
             msg["To"] = to_email
 
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+            #with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=5) as server:
                 server.starttls()
                 server.login(settings.EMAIL_USER, settings.EMAIL_PASSWORD)
                 server.send_message(msg)
@@ -28,6 +29,7 @@ class EmailService:
 
         except Exception as e:
             print(" Email sending failed:", str(e))
+            return False
 
 
     #  Generate + Send OTP
