@@ -2,7 +2,10 @@ from pydantic import BaseModel, EmailStr, validator
 
 
 class StudentUniversityCreate(BaseModel):
-    member_id: int
+    
+    membership_id : str
+    member_id: int = None
+
     university_name: str
     college_name: str
     college_code: str
@@ -25,7 +28,8 @@ class StudentUniversityCreate(BaseModel):
 
 
 class StudentAutonomousCreate(BaseModel):
-    member_id: int
+    membership_id : str
+    member_id: int = None
     college_name: str
     college_code: str
     qualification: str
