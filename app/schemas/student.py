@@ -36,5 +36,5 @@ class StudentAutonomousCreate(BaseModel):
     email: EmailStr
     password: str
     confirm_password: str
-    otp: str
+    #otp: str
     captcha_answer: int
