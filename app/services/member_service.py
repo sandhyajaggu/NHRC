@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 from app.models.member import Member
 from app.schemas.member import MemberCreate
 from app.utils.id_generator import generate_membership_id
-
 
 from app.core.security import hash_password
 import random
@@ -16,20 +16,24 @@ def generate_password():
 class MemberService:
 
     @staticmethod
-    def create_member(db, payload):
+    def create_member(db: Session, payload: MemberCreate):
 
-        # check duplicate
+        #  Normalize candidate_type (important for ID generator)
+        candidate_type = payload.candidate_type.strip().lower()
+
+        #  Check duplicate email
         existing = db.query(Member).filter(Member.email == payload.email).first()
         if existing:
-            raise Exception("Member already exists")
+            raise HTTPException(status_code=400, detail="Member already exists")
 
-        #  generate membership id
-        membership_id = generate_membership_id(db, payload.candidate_type)
+        #  Generate membership ID
+        membership_id = generate_membership_id(db, candidate_type)
 
-        #  generate password (INSIDE function)
+        #  Generate password
         raw_password = generate_password()
         hashed_password = hash_password(raw_password)
 
+        # Create member
         member = Member(
             membership_id=membership_id,
             full_name=payload.full_name,
@@ -42,8 +46,8 @@ class MemberService:
             mobile=payload.mobile,
             blood_group=payload.blood_group,
             whatsapp_notification=payload.whatsapp_notification,
-            candidate_type=payload.candidate_type,
-            password_hash=hashed_password   
+            candidate_type=candidate_type,   
+            password_hash=hashed_password
         )
 
         db.add(member)
@@ -53,6 +57,7 @@ class MemberService:
         return {
             "message": "Member created successfully",
             "membership_id": membership_id,
+            "member_id": member.id,   
             "email": payload.email,
-            "password": raw_password   
+            "password": raw_password
         }

@@ -5,7 +5,7 @@ class Member(Base):
     __tablename__ = "members"
 
     id = Column(Integer, primary_key=True, index=True)
-    membership_id = Column(String(50), unique=True, nullable=False)
+    membership_id = Column(String(50), unique=True, nullable=True)
     full_name = Column(String(255), nullable=False)
     gender = Column(String(20), nullable=True)
     dob = Column(Date, nullable=True)

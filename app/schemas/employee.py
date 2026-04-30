@@ -5,7 +5,9 @@ import re
 
 
 class EmployeeCreate(BaseModel):
-    member_id: int
+    
+    membership_id: str
+    member_id: int = None
 
     organization_name: str
     industry: str

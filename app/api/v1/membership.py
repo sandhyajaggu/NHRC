@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from fastapi import Form, UploadFile, File
 
 
+from app.models.member import Member
 from app.models.user import User
 from app.schemas.member import MemberCreate
 from app.schemas.employee import EmployeeCreate
@@ -44,6 +45,19 @@ def create_employee(
     payload: EmployeeCreate,
     db: Session = Depends(get_db)
 ):
+    # Find member using membership_id
+    member = db.query(Member).filter(
+        Member.membership_id == payload.membership_id
+    ).first()
+
+    # If not found → error
+    if not member:
+        raise HTTPException(status_code=404, detail="Invalid membership_id")
+
+    #Replace membership_id with actual DB id
+    payload.member_id = member.id
+
+    # Call service
     return EmployeeService.create_employee(db, payload)
 
 
