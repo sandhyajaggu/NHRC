@@ -27,9 +27,9 @@ class StudentService:
         if not member:
             raise HTTPException(status_code=404, detail="Member not found")
 
-        # Password validation
+        '''# Password validation
         if payload.password != payload.confirm_password:
-            raise HTTPException(status_code=400, detail="Passwords do not match")
+            raise HTTPException(status_code=400, detail="Passwords do not match")'''
 
         # Captcha validation
         if payload.captcha_answer <= 0:
@@ -48,7 +48,7 @@ class StudentService:
             end_year=payload.end_year,
             location=payload.location,
             email=payload.email,
-            password=payload.password  # (hash if needed)
+            #password=payload.password  # (hash if needed)
         )
 
         db.add(student)
@@ -61,33 +61,26 @@ class StudentService:
         }
     # 🔹 AUTONOMOUS
     @staticmethod
-    def create_autonomous(db: Session, payload):
+    def create_autonomous(db, payload):
 
+        #  Validate membership_id
         member = db.query(Member).filter(
-            Member.id == payload.member_id
+            Member.membership_id == payload.membership_id
         ).first()
 
         if not member:
-            raise HTTPException(404, "Member not found")
+            raise HTTPException(status_code=404, detail="Member not found")
 
-        if payload.password != payload.confirm_password:
-            raise HTTPException(400, "Passwords do not match")
+        
 
-        if not OTPService.verify_otp(db, payload.email, payload.otp):
-            raise HTTPException(400, "Invalid OTP")
-
+        #  Captcha validation
         if payload.captcha_answer <= 0:
-            raise HTTPException(400, "Invalid captcha")
+            raise HTTPException(status_code=400, detail="Invalid captcha")
 
-        existing = db.query(StudentAutonomousDetails).filter(
-            StudentAutonomousDetails.email == payload.email
-        ).first()
-
-        if existing:
-            raise HTTPException(400, "Email already exists")
-
+        #  Create student autonomous record
         student = StudentAutonomousDetails(
-            member_id=payload.member_id,
+            member_id=member.id,
+            university_name=payload.university_name,
             college_name=payload.college_name,
             college_code=payload.college_code,
             qualification=payload.qualification,
@@ -95,12 +88,14 @@ class StudentService:
             start_year=payload.start_year,
             end_year=payload.end_year,
             location=payload.location,
-            email=payload.email,
-            password_hash=hash_password(payload.password)
+            email=payload.email
         )
 
         db.add(student)
         db.commit()
         db.refresh(student)
 
-        return {"message": "Student autonomous created", "id": student.id}
+        return {
+            "message": "Student autonomous details created successfully",
+            "student_id": student.id
+        }
