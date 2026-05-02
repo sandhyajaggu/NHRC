@@ -10,11 +10,11 @@ from app.models.otp import OTPVerification
 from app.models.token_blacklist import TokenBlacklist
 from app.schemas.auth import RegisterAdminRequest, RegisterRequest, LoginRequest
 from app.core.security import hash_password, verify_password, create_access_token
-from app.services.otp_service import OTPService
 from app.utils.captcha import generate_captcha, verify_captcha
 from app.utils.email import generate_otp
 from app.utils.id_generator import generate_membership_id
 from fastapi import APIRouter, Depends, HTTPException
+from app.services.otp_service import generate_and_store_otp, verify_otp
 
 
 

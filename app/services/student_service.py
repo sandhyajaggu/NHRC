@@ -7,7 +7,7 @@ from app.models.student import (
     StudentAutonomousDetails
 )
 from app.models.member import Member
-from app.services.otp_service import OTPService
+from app.services.otp_service import generate_and_store_otp, verify_otp
 
 
 from fastapi import HTTPException

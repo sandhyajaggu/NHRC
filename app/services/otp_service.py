@@ -1,36 +1,41 @@
 import random
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-
 from app.models.otp import OTPVerification
-from app.utils.email_sender import EmailService
-import time
-otp_store = {}
-OTP_EXPIRY = 300  # 5 minutes
 
-class OTPService:
+def generate_and_store_otp(db: Session, email: str):
+    otp = str(random.randint(100000, 999999))
+    expiry = datetime.utcnow() + timedelta(minutes=5)
 
-    @staticmethod
-    def generate_and_store_otp(email: str):
-        otp = "633822"  # or random
-        expiry = int(time.time()) + OTP_EXPIRY
+    existing = db.query(OTPVerification).filter_by(email=email).first()
 
-        otp_store[email] = {
-            "otp": otp,
-            "expiry": expiry
-        }
+    if existing:
+        existing.otp = otp
+        existing.expires_at = expiry
+    else:
+        new_otp = OTPVerification(
+            email=email,
+            otp=otp,
+            expires_at=expiry
+        )
+        db.add(new_otp)
 
-        print(f"OTP for {email}: {otp}")  # debug
+    db.commit()
 
-        return otp
-    @staticmethod
-    def verify_otp(email: str, otp: str):
-        stored_otp = otp_store.get(email)
+    print(f"OTP for {email}: {otp}")  # debug
+    return otp
 
-        if not stored_otp:
-            return False, "OTP not found"
 
-        if stored_otp != otp:
-            return False, "Invalid OTP"
+def verify_otp(db: Session, email: str, otp: str):
+    record = db.query(OTPVerification).filter_by(email=email).first()
 
-        return True, "OTP verified successfully"
+    if not record:
+        return False, "OTP not found"
+
+    if datetime.utcnow() > record.expires_at:
+        return False, "OTP expired"
+
+    if record.otp != otp:
+        return False, "Invalid OTP"
+
+    return True, "OTP verified successfully"
