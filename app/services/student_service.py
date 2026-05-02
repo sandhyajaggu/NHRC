@@ -80,7 +80,7 @@ class StudentService:
         #  Create student autonomous record
         student = StudentAutonomousDetails(
             member_id=member.id,
-            university_name=payload.university_name,
+            #university_name=payload.university_name,
             college_name=payload.college_name,
             college_code=payload.college_code,
             qualification=payload.qualification,

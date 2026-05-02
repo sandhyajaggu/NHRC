@@ -27,7 +27,7 @@ class StudentUniversityCreate(BaseModel):
 
 class StudentAutonomousCreate(BaseModel):
     membership_id: str
-    university_name: str
+    #university_name: str
     college_name: str
     college_code: str
     qualification: str
