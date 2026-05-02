@@ -2,7 +2,7 @@ from pydantic import BaseModel,EmailStr
 
 
 class RepresentativeUniversityCreate(BaseModel):
-    member_id: int
+    membership_id: str
     college_name: str
     university_name: str
     college_code: str
@@ -18,7 +18,7 @@ class RepresentativeUniversityCreate(BaseModel):
 
 
 class RepresentativeAutonomousCreate(BaseModel):
-    member_id: int
+    membership_id: str
     college_name: str
     college_code: str
     designation: str
@@ -34,7 +34,7 @@ class RepresentativeAutonomousCreate(BaseModel):
 
 
 class RepresentativeBothCreate(BaseModel):
-    member_id: int
+    membership_id: str
     college_name: str
     university_name: str
     college_code: str

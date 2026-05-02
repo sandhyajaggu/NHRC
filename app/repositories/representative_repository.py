@@ -4,11 +4,12 @@ from app.models.representative import (
     RepresentativeBothDetails
 )
 
+
 class RepresentativeRepository:
 
     @staticmethod
     def create_university(db, data):
-        obj = RepresentativeUniversityDetails(**data.model_dump())
+        obj = RepresentativeUniversityDetails(**data)  
 
         db.add(obj)
         db.commit()
@@ -17,7 +18,7 @@ class RepresentativeRepository:
 
     @staticmethod
     def create_autonomous(db, data):
-        obj = RepresentativeAutonomousDetails(**data.model_dump())
+        obj = RepresentativeAutonomousDetails(**data)  
 
         db.add(obj)
         db.commit()
@@ -26,7 +27,7 @@ class RepresentativeRepository:
 
     @staticmethod
     def create_both(db, data):
-        obj = RepresentativeBothDetails(**data.model_dump())
+        obj = RepresentativeBothDetails(**data)  
 
         db.add(obj)
         db.commit()

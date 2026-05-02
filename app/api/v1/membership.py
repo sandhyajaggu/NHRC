@@ -81,9 +81,17 @@ def create_rep_university(
     payload: RepresentativeUniversityCreate,
     db: Session = Depends(get_db)
 ):
+    member = db.query(Member).filter(
+        Member.membership_id == payload.membership_id
+    ).first()
+
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
     return RepresentativeService.create_university(
         db,
-        payload
+        payload,
+        member.id   #  pass internal ID
     )
 
 
@@ -92,9 +100,17 @@ def create_rep_autonomous(
     payload: RepresentativeAutonomousCreate,
     db: Session = Depends(get_db)
 ):
+    member = db.query(Member).filter(
+        Member.membership_id == payload.membership_id
+    ).first()
+
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
     return RepresentativeService.create_autonomous(
         db,
-        payload
+        payload,
+        member.id
     )
 
 @router.post("/representative-both")
@@ -102,7 +118,15 @@ def create_rep_both(
     payload: RepresentativeBothCreate,
     db: Session = Depends(get_db)
 ):
+    member = db.query(Member).filter(
+        Member.membership_id == payload.membership_id
+    ).first()
+
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
     return RepresentativeService.create_both(
         db,
-        payload
-    )      
+        payload,
+        member.id
+    )
