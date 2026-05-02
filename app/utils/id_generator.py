@@ -1,4 +1,5 @@
 from app.models.counter import MembershipCounter
+from app.models.member import Member
 
 PREFIX_MAP = {
     "student": "STU",
@@ -8,33 +9,28 @@ PREFIX_MAP = {
 }
 
 
-def generate_membership_id(db, candidate_type: str):
-    #  Normalize input
-    candidate_type = candidate_type.strip().lower()
+def generate_membership_id(db, candidate_type):
+    prefix = PREFIX_MAP[candidate_type]
 
-    #  Validate candidate_type
-    if candidate_type not in PREFIX_MAP:
-        raise ValueError(f"Invalid candidate_type: {candidate_type}")
+    counter = db.query(MembershipCounter).filter_by(type=candidate_type).first()
 
-    #  Fetch counter safely (case-insensitive)
-    counter = (
-        db.query(MembershipCounter)
-        .filter(MembershipCounter.type.ilike(candidate_type))
-        .first()
-    )
-
-    #  Create if not exists
     if not counter:
         counter = MembershipCounter(type=candidate_type, current_value=0)
         db.add(counter)
         db.commit()
         db.refresh(counter)
 
-    #  Increment safely
-    counter.current_value += 1
-    db.commit()
-    db.refresh(counter)
+    while True:
+        counter.current_value += 1
 
-    #  Generate ID
-    prefix = PREFIX_MAP[candidate_type]
-    return f"NHRC-{prefix}-{counter.current_value:03}"
+        membership_id = f"NHRC-{prefix}-{counter.current_value:03}"
+
+        # 🔥 check if already exists
+        exists = db.query(Member).filter_by(membership_id=membership_id).first()
+
+        if not exists:
+            break
+
+    db.commit()
+
+    return membership_id
