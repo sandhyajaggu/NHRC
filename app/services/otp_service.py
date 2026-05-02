@@ -4,57 +4,40 @@ from sqlalchemy.orm import Session
 
 from app.models.otp import OTPVerification
 from app.utils.email_sender import EmailService
-
+import time
+otp_store = {}
+OTP_EXPIRY = 300  # 5 minutes
 
 class OTPService:
 
     @staticmethod
-    def generate_and_send_otp(db, email):
+    def generate_and_store_otp(email: str):
+        otp = "633822"  # or random
+        expiry = int(time.time()) + OTP_EXPIRY
 
-        #  delete old OTPs (VERY IMPORTANT)
-        db.query(OTPVerification).filter(
-            OTPVerification.email == email
-        ).delete()
+        otp_store[email] = {
+            "otp": otp,
+            "expiry": expiry
+        }
 
-        otp = str(random.randint(100000, 999999))
-
-        record = OTPVerification(
-            email=email,
-            otp=otp,
-            is_verified=False,
-            is_used=False,
-            expires_at=datetime.utcnow() + timedelta(minutes=5)
-        )
-
-        db.add(record)
-        db.commit()
-
-        EmailService.send_email(
-            to_email=email,
-            subject="Your OTP",
-            body=f"Your OTP is {otp}"
-        )
+        print(f"OTP for {email}: {otp}")  # debug
 
         return otp
-
     @staticmethod
-    def verify_otp(db, email, otp):
+    def verify_otp(email: str, otp: str):
+        data = otp_store.get(email)
 
-        record = db.query(OTPVerification).filter(
-            OTPVerification.email == email
-        ).order_by(OTPVerification.id.desc()).first()
+        if not data:
+            return False, "OTP not found"
 
-        if not record:
-            return False
+        if int(time.time()) > data["expiry"]:
+            del otp_store[email]
+            return False, "OTP expired"
 
-        if record.otp != otp:
-            return False
+        if str(data["otp"]) != str(otp):
+            return False, "Invalid OTP"
 
-        if record.expires_at < datetime.utcnow():
-            return False
+        # success → delete OTP
+        del otp_store[email]
 
-        #  ONLY VERIFY
-        record.is_verified = True
-        db.commit()
-
-        return True
+        return True, "OTP verified"
