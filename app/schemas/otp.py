@@ -1,4 +1,4 @@
-from pydantic import BaseModel, str
+from pydantic import BaseModel
 
 
 class OTPRequest(BaseModel):
