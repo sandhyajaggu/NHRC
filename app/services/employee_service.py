@@ -1,7 +1,8 @@
 from fastapi import HTTPException
 from app.models.employee import Employee
+from app.models.otp import OTPVerification
+from app.models.member import Member
 from app.core.security import hash_password
-from app.utils.email_sender import EmailService
 
 
 class EmployeeService:
@@ -17,18 +18,36 @@ class EmployeeService:
         if payload.captcha_answer <= 0:
             raise HTTPException(status_code=400, detail="Invalid captcha")
 
-        # OTP validation (based on OFFICIAL EMAIL)
-        # For now: dummy OTP
-        '''if payload.email_otp != "123456":
-            raise HTTPException(status_code=400, detail="Invalid OTP")'''
-        stored_otp = EmailService.get_otp(payload.official_email)
+        #  Get member using membership_id
+        member = db.query(Member).filter(
+            Member.membership_id == payload.membership_id
+        ).first()
 
-        if stored_otp != payload.email_otp:
-            raise HTTPException(status_code=400, detail="Invalid OTP")
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
 
-        # Create employee
+        #  OTP check (ONLY verified, not re-validating value)
+        otp_record = db.query(OTPVerification).filter(
+            OTPVerification.email == payload.official_email
+        ).first()
+
+        if not otp_record:
+            raise HTTPException(status_code=400, detail="OTP not found")
+
+        if not otp_record.is_verified:
+            raise HTTPException(status_code=400, detail="OTP not verified")
+
+        if otp_record.is_used:
+            raise HTTPException(status_code=400, detail="OTP already used")
+
+        # (optional) expiry check
+        from datetime import datetime
+        if datetime.utcnow() > otp_record.expires_at:
+            raise HTTPException(status_code=400, detail="OTP expired")
+
+        #  Create employee
         employee = Employee(
-            member_id=payload.member_id,
+            member_id=member.id,
             organization_name=payload.organization_name,
             industry=payload.industry,
             department=payload.department,
@@ -41,19 +60,16 @@ class EmployeeService:
             id_card_front=payload.id_card_front,
             id_card_back=payload.id_card_back,
             referral_id=payload.referral_id,
-
-            #  OTP-related email
             official_email=payload.official_email,
-            email_otp=payload.email_otp,
-
-            #  personal login email (no OTP here)
             user_email=payload.user_email,
-
-            #  store hashed password
             password=hash_password(payload.password)
         )
 
         db.add(employee)
+
+        #  mark OTP as used AFTER success
+        otp_record.is_used = True
+
         db.commit()
         db.refresh(employee)
 
