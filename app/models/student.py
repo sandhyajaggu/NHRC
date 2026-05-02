@@ -26,7 +26,7 @@ class StudentUniversityDetails(Base):
 
     #  login fields
     email = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)
+    #password_hash = Column(String, nullable=False)
 
     #  file uploads
     id_front = Column(String)
@@ -55,7 +55,7 @@ class StudentAutonomousDetails(Base):
 
     #  login
     email = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)
+    #password_hash = Column(String, nullable=False)
 
     #  uploads
     id_front = Column(String)
