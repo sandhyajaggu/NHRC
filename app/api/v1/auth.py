@@ -182,4 +182,19 @@ def refresh_token():
 def get_captcha():
     return generate_captcha()
 
+@router.post("/verify-captcha")
+def verify_captcha_api(payload: dict):
+    captcha_id = payload.get("captcha_id")
+    answer = payload.get("answer")
+
+    if not captcha_id or answer is None:
+        raise HTTPException(status_code=400, detail="captcha_id and answer required")
+
+    is_valid, message = verify_captcha(captcha_id, answer)
+
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=message)
+
+    return {"message": message}
+
 
