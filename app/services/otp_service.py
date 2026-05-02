@@ -25,19 +25,12 @@ class OTPService:
         return otp
     @staticmethod
     def verify_otp(email: str, otp: str):
-        data = otp_store.get(email)
+        stored_otp = otp_store.get(email)
 
-        if not data:
+        if not stored_otp:
             return False, "OTP not found"
 
-        if int(time.time()) > data["expiry"]:
-            del otp_store[email]
-            return False, "OTP expired"
-
-        if str(data["otp"]) != str(otp):
+        if stored_otp != otp:
             return False, "Invalid OTP"
 
-        # success → delete OTP
-        del otp_store[email]
-
-        return True, "OTP verified"
+        return True, "OTP verified successfully"

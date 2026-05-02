@@ -13,17 +13,11 @@ def send_otp(email: str):
     EmailService.send_otp(email)
     return {"message": "OTP sent successfully"}
 
-@router.post("/otp/verify")
-def verify_otp(payload: dict):
-    email = payload.get("email")
-    otp = payload.get("otp")
-
-    if not email or not otp:
-        raise HTTPException(400, "email and otp required")
-
-    is_valid, message = verify_otp(email, otp)
+@router.post("/verify")
+def verify_otp_api(payload: OTPVerifyRequest):
+    is_valid, message = OTPVerifyRequest(payload.email, payload.otp)
 
     if not is_valid:
-        raise HTTPException(400, detail=message)
+        raise HTTPException(status_code=400, detail=message)
 
     return {"message": message}
