@@ -1,3 +1,5 @@
+# app/models/otp.py
+
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from datetime import datetime
 from app.db.base import Base
