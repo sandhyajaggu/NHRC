@@ -10,43 +10,35 @@ from app.models.member import Member
 from app.services.otp_service import OTPService
 
 
+from fastapi import HTTPException
+from app.models.member import Member
+
+
 class StudentService:
 
-    # 🔹 UNIVERSITY
     @staticmethod
-    def create_university(db: Session, payload):
+    def create_university(db, payload):
 
-        # 1. Check member
+        # Validate membership_id
         member = db.query(Member).filter(
             Member.membership_id == payload.membership_id
         ).first()
 
         if not member:
-            raise HTTPException(404, "Member not found")
+            raise HTTPException(status_code=404, detail="Member not found")
 
-        # 2. Password validation
+        # Password validation
         if payload.password != payload.confirm_password:
-            raise HTTPException(400, "Passwords do not match")
+            raise HTTPException(status_code=400, detail="Passwords do not match")
 
-        # 3. OTP validation
-        if not OTPService.verify_otp(db, payload.email, payload.otp):
-            raise HTTPException(400, "Invalid or expired OTP")
-
-        # 4. CAPTCHA validation (simple)
+        # Captcha validation
         if payload.captcha_answer <= 0:
-            raise HTTPException(400, "Invalid captcha")
+            raise HTTPException(status_code=400, detail="Invalid captcha")
 
-        # 5. Prevent duplicate email
-        existing = db.query(StudentUniversityDetails).filter(
-            StudentUniversityDetails.email == payload.email
-        ).first()
+        #  NO OTP VALIDATION FOR STUDENT
 
-        if existing:
-            raise HTTPException(400, "Email already exists")
-
-        # 6. Create record
         student = StudentUniversityDetails(
-            member_id=payload.member_id,
+            member_id=member.id,
             university_name=payload.university_name,
             college_name=payload.college_name,
             college_code=payload.college_code,
@@ -56,15 +48,17 @@ class StudentService:
             end_year=payload.end_year,
             location=payload.location,
             email=payload.email,
-            password_hash=hash_password(payload.password)
+            password=payload.password  # (hash if needed)
         )
 
         db.add(student)
         db.commit()
         db.refresh(student)
 
-        return {"message": "Student university created", "id": student.id}
-
+        return {
+            "message": "Student university details created successfully",
+            "student_id": student.id
+        }
     # 🔹 AUTONOMOUS
     @staticmethod
     def create_autonomous(db: Session, payload):
