@@ -3,11 +3,10 @@ from enum import member
 from pydantic import BaseModel, EmailStr, validator
 
 
-class StudentUniversityCreate(BaseModel):
-    
-    membership_id : str
-    member_id : int = None
+from pydantic import BaseModel
 
+class StudentUniversityCreate(BaseModel):
+    membership_id: str
     university_name: str
     college_name: str
     college_code: str
@@ -16,10 +15,7 @@ class StudentUniversityCreate(BaseModel):
     start_year: int
     end_year: int
     location: str
-    email: EmailStr
-    password: str
-    confirm_password: str
-    #otp: str
+    email: str
     captcha_answer: int
 
     @validator("end_year")
@@ -30,8 +26,8 @@ class StudentUniversityCreate(BaseModel):
 
 
 class StudentAutonomousCreate(BaseModel):
-    membership_id : str
-    member_id : int = None
+    membership_id: str
+    university_name: str
     college_name: str
     college_code: str
     qualification: str
@@ -39,8 +35,5 @@ class StudentAutonomousCreate(BaseModel):
     start_year: int
     end_year: int
     location: str
-    email: EmailStr
-    password: str
-    confirm_password: str
-    #otp: str
+    email: str
     captcha_answer: int
