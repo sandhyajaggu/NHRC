@@ -91,7 +91,7 @@ def create_rep_university(
     return RepresentativeService.create_university(
         db,
         payload,
-        member.id   #  pass internal ID
+        
     )
 
 
@@ -110,7 +110,6 @@ def create_rep_autonomous(
     return RepresentativeService.create_autonomous(
         db,
         payload,
-        member.id
     )
 
 @router.post("/representative-both")
@@ -128,5 +127,4 @@ def create_rep_both(
     return RepresentativeService.create_both(
         db,
         payload,
-        member.id
     )
