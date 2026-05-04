@@ -67,7 +67,7 @@ def verify_otp(db: Session, email: str, otp: str):
 
     #  mark used
     record.is_verified = True
-    record.is_used = True
+    #record.is_used = True
     db.commit()
 
     return True, "OTP verified successfully"
