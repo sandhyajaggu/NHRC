@@ -23,17 +23,19 @@ class AdminService:
     def list_users(db: Session, role: str):
         return AdminRepository.get_users_by_role(db, role)
 
-    @staticmethod
-    def approve_user(db: Session, user_id: int):
-        return AdminRepository.approve_user(db, user_id)
+    
 
     @staticmethod
-    def reject_user(db: Session, user_id: int):
-        return AdminRepository.reject_user(db, user_id)
+    def approve_user(db: Session, membership_id: str):
+        return AdminRepository.approve_user(db, membership_id)
 
     @staticmethod
-    def delete_user(db: Session, user_id: int):
-        return AdminRepository.delete_user(db, user_id)
+    def reject_user(db: Session, membership_id: str):
+        return AdminRepository.reject_user(db, membership_id)
+
+    @staticmethod
+    def delete_user(db: Session, membership_id: str):
+        return AdminRepository.delete_user(db, membership_id)
 
     # NEW FUNCTION (STEP 3)
     @staticmethod

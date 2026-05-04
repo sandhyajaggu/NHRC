@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import date
+from enum import Enum
 
 
 class MemberCreate(BaseModel):
@@ -14,3 +15,11 @@ class MemberCreate(BaseModel):
     blood_group: str
     whatsapp_notification: bool
     candidate_type: str
+
+class StatusEnum(str, Enum):
+    approved = "approved"
+    rejected = "rejected"
+
+
+class MemberStatusUpdate(BaseModel):
+    status: StatusEnum

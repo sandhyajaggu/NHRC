@@ -7,6 +7,7 @@ from app.models.member import Member
 from app.models.user import User
 from app.services.admin_service import AdminService
 from app.schemas.admin import *
+from app.schemas.member import MemberStatusUpdate
 
 from app.core.dependencies import get_current_admin  
 
@@ -50,9 +51,16 @@ def get_representatives(
 
 
 # ================= APPROVAL =================
-@router.post("/approve-member/{membership_id}")
-def approve_member(membership_id: str, db: Session = Depends(get_db)):
 
+from sqlalchemy.sql import func
+from fastapi import HTTPException
+
+'''@router.put("/members/{membership_id}/status")
+def update_member_status(
+    membership_id: str,
+    payload: MemberStatusUpdate,
+    db: Session
+):
     member = db.query(Member).filter(
         Member.membership_id == membership_id
     ).first()
@@ -60,12 +68,24 @@ def approve_member(membership_id: str, db: Session = Depends(get_db)):
     if not member:
         raise HTTPException(status_code=404, detail="Member not found")
 
-    member.status = "approved"
+    #  SET STATUS
+    member.status = payload.status
+
+    #  TRACK TIME
+    if payload.status == "approved":
+        member.approved_at = func.now()
+        member.rejected_at = None
+
+    elif payload.status == "rejected":
+        member.rejected_at = func.now()
+        member.approved_at = None
+
     db.commit()
 
     return {
-        "message": "Member approved successfully",
-        "membership_id": member.membership_id
+        "message": f"Member {payload.status} successfully",
+        "membership_id": membership_id,
+        "status": member.status
     }
 
 
@@ -104,7 +124,21 @@ def delete_member(membership_id: str, db: Session = Depends(get_db)):
     return {
         "message": "Member deleted successfully",
         "membership_id": membership_id
-    }
+    }'''
+
+@router.put("/members/{membership_id}/approve")
+def approve_member(membership_id: str, db: Session = Depends(get_db)):
+    return AdminService.approve_user(db, membership_id)
+
+
+@router.put("/members/{membership_id}/reject")
+def reject_member(membership_id: str, db: Session = Depends(get_db)):
+    return AdminService.reject_user(db, membership_id)
+
+
+@router.delete("/members/{membership_id}")
+def delete_member(membership_id: str, db: Session = Depends(get_db)):
+    return AdminService.delete_user(db, membership_id)
 
 # ================= EXTRA ADMIN FEATURES =================
 import os

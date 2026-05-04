@@ -20,4 +20,8 @@ class Member(Base):
     whatsapp_notification = Column(Boolean, default=False)
     candidate_type = Column(String(50), nullable=True)
     password_hash = Column(String, nullable=True)
+    status = Column(String(20), default="pending") 
+    approved_at = Column(TIMESTAMP, nullable=True)
+    rejected_at = Column(TIMESTAMP, nullable=True)
+
     created_at = Column(TIMESTAMP, server_default=func.now())
