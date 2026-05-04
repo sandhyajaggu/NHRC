@@ -13,6 +13,7 @@ class RepresentativeService:
         ).first()
 
         if not member:
+            print(" MEMBER NOT FOUND:", payload.membership_id)
             raise HTTPException(status_code=404, detail="Member not found")
 
         data = payload.dict()
@@ -30,6 +31,7 @@ class RepresentativeService:
         ).first()
 
         if not member:
+            print(" MEMBER NOT FOUND:", payload.membership_id)
             raise HTTPException(status_code=404, detail="Member not found")
 
         data = payload.dict()
@@ -47,6 +49,7 @@ class RepresentativeService:
         ).first()
 
         if not member:
+            print(" MEMBER NOT FOUND:", payload.membership_id)
             raise HTTPException(status_code=404, detail="Member not found")
 
         data = payload.dict()
@@ -54,3 +57,4 @@ class RepresentativeService:
         data.pop("membership_id", None)
 
         return RepresentativeRepository.create_both(db, data)
+    
