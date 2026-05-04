@@ -9,7 +9,7 @@ class RepresentativeRepository:
 
     @staticmethod
     def create_university(db, data):
-        obj = RepresentativeUniversityDetails(**data)  
+        obj = RepresentativeUniversityDetails(**data)
 
         db.add(obj)
         db.commit()
@@ -18,7 +18,7 @@ class RepresentativeRepository:
 
     @staticmethod
     def create_autonomous(db, data):
-        obj = RepresentativeAutonomousDetails(**data)  
+        obj = RepresentativeAutonomousDetails(**data)
 
         db.add(obj)
         db.commit()
@@ -27,7 +27,7 @@ class RepresentativeRepository:
 
     @staticmethod
     def create_both(db, data):
-        obj = RepresentativeBothDetails(**data)  
+        obj = RepresentativeBothDetails(**data)
 
         db.add(obj)
         db.commit()
