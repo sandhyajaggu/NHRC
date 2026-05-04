@@ -50,45 +50,61 @@ def get_representatives(
 
 
 # ================= APPROVAL =================
-@router.post("/approve-member/{member_id}")
-def approve_member(
-    member_id: int,
-    db: Session = Depends(get_db),
-    current_admin: User = Depends(get_current_admin)
-):
-    return AdminService.approve_member(db, member_id)
+@router.post("/approve-member/{membership_id}")
+def approve_member(membership_id: str, db: Session = Depends(get_db)):
 
-
-@router.put("/reject/{user_id}")
-def reject_user(
-    user_id: int,
-    db: Session = Depends(get_db),
-    admin: Member = Depends(get_current_admin)   
-):
-    return AdminService.reject_user(db, user_id)
-
-
-# ================= DELETE MEMBER =================
-@router.delete("/member/{member_id}")
-def delete_member(
-    member_id: int,
-    db: Session = Depends(get_db),
-    admin: Member = Depends(get_current_admin)   
-):
-    member = db.query(Member).filter(Member.id == member_id).first()
+    member = db.query(Member).filter(
+        Member.membership_id == membership_id
+    ).first()
 
     if not member:
         raise HTTPException(status_code=404, detail="Member not found")
 
-    try:
-        db.delete(member)
-        db.commit()
-        return {"message": "Member deleted successfully"}
+    member.status = "approved"
+    db.commit()
 
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+    return {
+        "message": "Member approved successfully",
+        "membership_id": member.membership_id
+    }
 
+
+@router.post("/reject-member/{membership_id}")
+def reject_member(membership_id: str, db: Session = Depends(get_db)):
+
+    member = db.query(Member).filter(
+        Member.membership_id == membership_id
+    ).first()
+
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    member.status = "rejected"
+    db.commit()
+
+    return {
+        "message": "Member rejected successfully",
+        "membership_id": member.membership_id
+    }
+
+# ================= DELETE MEMBER =================
+@router.delete("/delete-member/{membership_id}")
+def delete_member(membership_id: str, db: Session = Depends(get_db)):
+
+    member = db.query(Member).filter(
+        Member.membership_id == membership_id
+    ).first()
+
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    db.delete(member)
+    db.commit()
+
+    return {
+        "message": "Member deleted successfully",
+        "membership_id": membership_id
+    }
 
 # ================= EXTRA ADMIN FEATURES =================
 import os

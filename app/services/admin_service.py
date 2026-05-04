@@ -41,6 +41,7 @@ class AdminService:
 
         # 1. Get member
         member = db.query(Member).filter(Member.id == member_id).first()
+        
 
         if not member:
             raise Exception("Member not found")
