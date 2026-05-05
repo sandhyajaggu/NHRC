@@ -26,9 +26,9 @@ class ContactService:
     #  FIXED: use ID
     @staticmethod
     def delete_contact(db: Session, contact_id: int):
-        deleted = ContactRepository.delete_by_id(db, contact_id)
+        contact = ContactRepository.delete_by_id(db, contact_id)
 
-        if not deleted:
-            raise HTTPException(status_code=404, detail="Contact not found")
+        if not contact:
+            raise Exception("Contact not found")
 
         return {"message": "Contact deleted successfully"}
