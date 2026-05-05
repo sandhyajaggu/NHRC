@@ -5,7 +5,7 @@ class ContactMessage(Base):
     __tablename__ = "contact_messages"
 
     id = Column(Integer, primary_key=True, index=True)
-    membership_id = Column(String, nullable=False, index=True)
+    membership_id = Column(String, nullable=True)
     name = Column(String)
     email = Column(String)
     mobile = Column(String)

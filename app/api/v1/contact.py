@@ -15,16 +15,14 @@ router = APIRouter(prefix="/contact", tags=["Contact"])
 @router.post("/")
 def create_contact(
     payload: ContactCreate,
-    db: Session = Depends(get_db),
-    user: Member = Depends(get_current_user)  # 🔥 important
+    db: Session = Depends(get_db)
 ):
     contact_data = payload.dict()
 
-    #  auto assign membership_id
-    contact_data["membership_id"] = user.membership_id
+    # optional
+    contact_data["membership_id"] = None
 
     return ContactService.create_contact(db, contact_data)
-
 #  GET ALL
 @router.get("/")
 def get_all_contacts(db: Session = Depends(get_db)):
