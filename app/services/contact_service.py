@@ -1,7 +1,6 @@
-# app/services/contact_service.py
-
 from sqlalchemy.orm import Session
 from app.repositories.contact_repository import ContactRepository
+from fastapi import HTTPException
 
 
 class ContactService:
@@ -14,20 +13,22 @@ class ContactService:
     def get_all_contacts(db: Session):
         return ContactRepository.get_all(db)
 
+    #  FIXED: use ID
     @staticmethod
-    def get_contact_by_membership_id(db: Session, membership_id: str):
-        contact = ContactRepository.get_by_membership_id(db, membership_id)
+    def get_contact_by_id(db: Session, contact_id: int):
+        contact = ContactRepository.get_by_id(db, contact_id)
 
         if not contact:
-            raise Exception("Contact not found")
+            raise HTTPException(status_code=404, detail="Contact not found")
 
         return contact
 
+    #  FIXED: use ID
     @staticmethod
-    def delete_contact(db: Session, membership_id: str):
-        contact = ContactRepository.delete_by_membership_id(db, membership_id)
+    def delete_contact(db: Session, contact_id: int):
+        deleted = ContactRepository.delete_by_id(db, contact_id)
 
-        if not contact:
-            raise Exception("Contact not found")
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Contact not found")
 
         return {"message": "Contact deleted successfully"}

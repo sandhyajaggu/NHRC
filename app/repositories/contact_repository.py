@@ -19,19 +19,17 @@ class ContactRepository:
         return db.query(ContactMessage).all()
 
     @staticmethod
-    def get_by_membership_id(db: Session, membership_id: str):
-        return db.query(ContactMessage).filter(
-            ContactMessage.membership_id == membership_id
-        ).first()
+    def get_by_id(db: Session, contact_id: int):
+        return db.query(ContactMessage).filter(ContactMessage.id == contact_id).first()
 
-    @staticmethod
-    def delete_by_membership_id(db: Session, membership_id: str):
-        contact = db.query(ContactMessage).filter(
-            ContactMessage.membership_id == membership_id
-        ).first()
 
-        if contact:
-            db.delete(contact)
-            db.commit()
+@staticmethod
+def delete_by_id(db: Session, contact_id: int):
+    contact = db.query(ContactMessage).filter(ContactMessage.id == contact_id).first()
 
-        return contact
+    if not contact:
+        return False
+
+    db.delete(contact)
+    db.commit()
+    return True

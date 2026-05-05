@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, EmailStr
 
 
@@ -6,3 +8,14 @@ class ContactCreate(BaseModel):
     email: EmailStr
     mobile: str
     message: str
+
+class ContactResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    mobile: str
+    message: str
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
