@@ -19,9 +19,6 @@ def create_contact(
 ):
     contact_data = payload.dict()
 
-    # optional
-    contact_data["membership_id"] = None
-
     return ContactService.create_contact(db, contact_data)
 #  GET ALL
 @router.get("/")

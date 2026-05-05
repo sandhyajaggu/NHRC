@@ -8,7 +8,7 @@ class ContactService:
 
     @staticmethod
     def create_contact(db: Session, payload):
-        return ContactRepository.create(db, payload.dict())
+        return ContactRepository.create(db, payload)
 
     @staticmethod
     def get_all_contacts(db: Session):
