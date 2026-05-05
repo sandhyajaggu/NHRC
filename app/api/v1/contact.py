@@ -2,6 +2,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.core.dependencies import get_current_user
+from app.models.member import Member
 from app.schemas.contact import ContactCreate
 from app.services.contact_service import ContactService
 from app.db.session import get_db
@@ -11,9 +13,17 @@ router = APIRouter(prefix="/contact", tags=["Contact"])
 
 # CREATE (already exists)
 @router.post("/")
-def create_contact(payload: ContactCreate, db: Session = Depends(get_db)):
-    return ContactService.create_contact(db, payload)
+def create_contact(
+    payload: ContactCreate,
+    db: Session = Depends(get_db),
+    user: Member = Depends(get_current_user)  # 🔥 important
+):
+    contact_data = payload.dict()
 
+    #  auto assign membership_id
+    contact_data["membership_id"] = user.membership_id
+
+    return ContactService.create_contact(db, contact_data)
 
 #  GET ALL
 @router.get("/")

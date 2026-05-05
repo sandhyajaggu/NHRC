@@ -7,8 +7,8 @@ from app.models.contact import ContactMessage
 class ContactRepository:
 
     @staticmethod
-    def create(db: Session, payload: dict):
-        contact = ContactMessage(**payload)
+    def create(db: Session, data: dict):
+        contact = ContactMessage(**data)
         db.add(contact)
         db.commit()
         db.refresh(contact)
