@@ -49,6 +49,13 @@ def get_representatives(
 ):
     return AdminService.list_users(db, "representative")
 
+@router.get("/member/{membership_id}")
+def get_member_full_details(
+    membership_id: str,
+    db: Session = Depends(get_db),
+    admin: Member = Depends(get_current_admin)
+):
+    return AdminService.get_member_full_details(db, membership_id)
 
 # ================= APPROVAL =================
 

@@ -1,6 +1,10 @@
 from sqlalchemy.orm import Session
+from app.models.employee import Employee
 from app.models.member import Member
 from sqlalchemy.sql import func
+
+from app.models.representative import RepresentativeAutonomousDetails, RepresentativeBothDetails, RepresentativeUniversityDetails
+from app.models.student import StudentAutonomousDetails, StudentUniversityDetails
 
 
 class AdminRepository:
@@ -51,8 +55,97 @@ class AdminRepository:
                 Member.status == "pending"
             ).count(),
         }
+    
+    @staticmethod
+    def model_to_dict(obj):
+        if not obj:
+            return None
+
+        data = obj.__dict__.copy()
+        data.pop("_sa_instance_state", None)
+
+        #  remove sensitive fields
+        data.pop("password", None)
+        data.pop("password_hash", None)
+        data.pop("email_otp", None)
+        data.pop("captcha_answer", None)
+
+        return data
+
 
     @staticmethod
+    def get_member_full_details(db, membership_id: str):
+
+        member = db.query(Member).filter(
+            Member.membership_id == membership_id
+        ).first()
+
+        if not member:
+            raise Exception("Member not found")
+
+        #  MEMBER BASE DATA
+        member_data = AdminRepository.model_to_dict(member)
+
+        # =====================================
+        #  EMPLOYEE
+        # =====================================
+        if member.candidate_type == "employee":
+
+            emp = db.query(Employee).filter(
+                Employee.member_id == member.id
+            ).first()
+
+            details = AdminRepository.model_to_dict(emp)
+
+        # =====================================
+        #  STUDENT
+        # =====================================
+        elif member.candidate_type == "student":
+
+            stu_uni = db.query(StudentUniversityDetails).filter(
+                StudentUniversityDetails.member_id == member.id
+            ).first()
+
+            stu_auto = db.query(StudentAutonomousDetails).filter(
+                StudentAutonomousDetails.member_id == member.id
+            ).first()
+
+            details = (
+                AdminRepository.model_to_dict(stu_uni)
+                or AdminRepository.model_to_dict(stu_auto)
+            )
+
+        # =====================================
+        #  REPRESENTATIVE
+        # =====================================
+        elif member.candidate_type == "representative":
+
+            rep_uni = db.query(RepresentativeUniversityDetails).filter(
+                RepresentativeUniversityDetails.member_id == member.id
+            ).first()
+
+            rep_auto = db.query(RepresentativeAutonomousDetails).filter(
+                RepresentativeAutonomousDetails.member_id == member.id
+            ).first()
+
+            rep_both = db.query(RepresentativeBothDetails).filter(
+                RepresentativeBothDetails.member_id == member.id
+            ).first()
+
+            details = (
+                AdminRepository.model_to_dict(rep_uni)
+                or AdminRepository.model_to_dict(rep_auto)
+                or AdminRepository.model_to_dict(rep_both)
+            )
+
+        else:
+            details = None
+
+        #  FINAL RESPONSE (MERGED)
+        return {
+            "member": member_data,
+            "details": details
+        }
     def get_users_by_role(db: Session, role: str):
         return db.query(Member).filter(
             Member.candidate_type == role

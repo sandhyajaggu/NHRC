@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.repositories.employee_repository import EmployeeRepository
 from app.repositories.student_repository import StudentRepository
 from app.repositories.representative_repository import RepresentativeRepository
+from app.repositories.admin_repository import AdminRepository
 
 
 
@@ -22,6 +23,10 @@ class AdminService:
     @staticmethod
     def dashboard_stats(db: Session):
         return AdminRepository.get_dashboard_stats(db)
+    
+    @staticmethod
+    def get_member_full_details(db, membership_id: str):
+        return AdminRepository.get_member_full_details(db, membership_id)
 
     @staticmethod
     def list_users(db: Session, role: str):
