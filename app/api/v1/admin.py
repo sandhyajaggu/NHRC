@@ -147,4 +147,12 @@ def reject_member(membership_id: str, db: Session = Depends(get_db)):
 def delete_member(membership_id: str, db: Session = Depends(get_db)):
     return AdminService.delete_user(db, membership_id)
 
+@router.delete("/member/{membership_id}")
+def delete_member(
+    membership_id: str,
+    db: Session = Depends(get_db),
+    admin: Member = Depends(get_current_admin)
+):
+    return AdminService.delete_member(db, membership_id)
+
 # ================= EXTRA ADMIN FEATURES =================

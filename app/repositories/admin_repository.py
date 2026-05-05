@@ -203,3 +203,51 @@ class AdminRepository:
         db.commit()
 
         return True
+    @staticmethod
+    def delete_member(db, membership_id: str):
+
+        member = db.query(Member).filter(
+            Member.membership_id == membership_id
+        ).first()
+
+        if not member:
+            return None
+
+        # =========================
+        # DELETE RELATED DATA
+        # =========================
+
+        # Employee
+        db.query(Employee).filter(
+            Employee.member_id == member.id
+        ).delete()
+
+        # Student
+        db.query(StudentUniversityDetails).filter(
+            StudentUniversityDetails.member_id == member.id
+        ).delete()
+
+        db.query(StudentAutonomousDetails).filter(
+            StudentAutonomousDetails.member_id == member.id
+        ).delete()
+
+        # Representative
+        db.query(RepresentativeUniversityDetails).filter(
+            RepresentativeUniversityDetails.member_id == member.id
+        ).delete()
+
+        db.query(RepresentativeAutonomousDetails).filter(
+            RepresentativeAutonomousDetails.member_id == member.id
+        ).delete()
+
+        db.query(RepresentativeBothDetails).filter(
+            RepresentativeBothDetails.member_id == member.id
+        ).delete()
+
+        # =========================
+        # DELETE MEMBER
+        # =========================
+        db.delete(member)
+        db.commit()
+
+        return True

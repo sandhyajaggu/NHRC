@@ -52,6 +52,19 @@ class AdminService:
     @staticmethod
     def delete_user(db: Session, membership_id: str):
         return AdminRepository.delete_user(db, membership_id)
+    
+    @staticmethod
+    def delete_member(db, membership_id: str):
+
+        result = AdminRepository.delete_member(db, membership_id)
+
+        if not result:
+            raise Exception("Member not found")
+
+        return {
+            "message": "Member deleted successfully",
+            "membership_id": membership_id
+        }
 
     # NEW FUNCTION (STEP 3)
     @staticmethod
