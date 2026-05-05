@@ -156,17 +156,35 @@ def admin_login(payload: LoginRequest, db: Session = Depends(get_db)):
 @router.post("/login")
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
-    #  fetch user from DB
+    #  Fetch user
     user = db.query(Member).filter(Member.email == payload.email).first()
 
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    #  use INSTANCE (member), not class (Member)
+    #  Verify password
     if not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token({"sub": user.email,"role":user.role})
+    #  ADD STATUS CHECK HERE
+    if user.status == "pending":
+        raise HTTPException(status_code=403, detail="Your account is pending approval")
+
+    if user.status == "rejected":
+        raise HTTPException(status_code=403, detail="Your account was rejected by admin")
+
+    
+    if user.status != "approved":
+        raise HTTPException(
+            status_code=403,
+            detail=f"Your account is {user.status}. Please contact admin."
+        )
+
+    # 4. Generate token
+    token = create_access_token({
+        "sub": user.email,
+        "role": user.role
+    })
 
     return {
         "access_token": token,
