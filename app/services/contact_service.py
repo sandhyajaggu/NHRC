@@ -24,11 +24,19 @@ class ContactService:
         return contact
 
     #  FIXED: use ID
+    from fastapi import HTTPException
+
+
+
     @staticmethod
-    def delete_contact(db: Session, contact_id: int):
+    def delete_contact(db, contact_id: int):
+        print("Deleting contact_id:", contact_id)
+
         contact = ContactRepository.delete_by_id(db, contact_id)
 
+        print("Contact found:", contact)
+
         if not contact:
-            raise Exception("Contact not found")
+            raise HTTPException(status_code=404, detail="Contact not found")
 
         return {"message": "Contact deleted successfully"}

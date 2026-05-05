@@ -23,14 +23,18 @@ class ContactRepository:
         return db.query(ContactMessage).filter(ContactMessage.id == contact_id).first()
 
 
-@staticmethod
-def delete_by_id(db: Session, contact_id: int):
-    contact = db.query(ContactMessage).filter(ContactMessage.id == contact_id).first()
+from app.models.contact import Contact
 
-    if not contact:
-        return None
+class ContactRepository:
 
-    db.delete(contact)
-    db.commit()
+    @staticmethod
+    def delete_by_id(db, contact_id: int):
+        contact = db.query(Contact).filter(Contact.id == contact_id).first()
 
-    return contact
+        if not contact:
+            return None
+
+        db.delete(contact)
+        db.commit()
+
+        return contact
