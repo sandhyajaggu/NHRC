@@ -4,6 +4,10 @@ from app.core.security import hash_password
 import random
 import string
 from sqlalchemy.orm import Session
+from app.repositories.employee_repository import EmployeeRepository
+from app.repositories.student_repository import StudentRepository
+from app.repositories.representative_repository import RepresentativeRepository
+
 
 
 from app.repositories.admin_repository import AdminRepository
@@ -21,8 +25,15 @@ class AdminService:
 
     @staticmethod
     def list_users(db: Session, role: str):
-        return AdminRepository.get_users_by_role(db, role)
 
+        if role == "employee":
+            return EmployeeRepository.get_employees_with_details(db)
+
+        elif role == "student":
+            return StudentRepository.get_students_with_details(db)
+
+        elif role == "representative":
+            return RepresentativeRepository.get_representatives_with_details(db)
     
 
     @staticmethod
