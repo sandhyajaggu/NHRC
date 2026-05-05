@@ -251,3 +251,23 @@ class AdminRepository:
         db.commit()
 
         return True
+    
+    @staticmethod
+    def bulk_delete_members(db: Session, membership_ids: list):
+
+        members = db.query(Member).filter(
+            Member.membership_id.in_(membership_ids)
+        ).all()
+
+        deleted_ids = []
+
+        for member in members:
+            deleted_ids.append(member.membership_id)
+            db.delete(member)
+
+        db.commit()
+
+        return {
+            "deleted_count": len(deleted_ids),
+            "deleted_ids": deleted_ids
+        }

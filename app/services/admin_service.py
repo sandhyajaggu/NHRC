@@ -65,6 +65,9 @@ class AdminService:
             "message": "Member deleted successfully",
             "membership_id": membership_id
         }
+    @staticmethod
+    def bulk_delete_members(db: Session, membership_ids: list):
+        return AdminRepository.bulk_delete_members(db, membership_ids)
 
     # NEW FUNCTION (STEP 3)
     @staticmethod

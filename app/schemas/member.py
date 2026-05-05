@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel, EmailStr
 from datetime import date
 from enum import Enum
@@ -23,3 +25,6 @@ class StatusEnum(str, Enum):
 
 class MemberStatusUpdate(BaseModel):
     status: StatusEnum
+
+class BulkDeleteRequest(BaseModel):
+    membership_ids: List[str]
