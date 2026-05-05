@@ -1,14 +1,14 @@
 # app/repositories/contact_repository.py
 
 from sqlalchemy.orm import Session
-from app.models.contact import Contact
+from app.models.contact import ContactMessage
 
 
 class ContactRepository:
 
     @staticmethod
     def create(db: Session, payload: dict):
-        contact = Contact(**payload)
+        contact = ContactMessage(**payload)
         db.add(contact)
         db.commit()
         db.refresh(contact)
@@ -16,18 +16,18 @@ class ContactRepository:
 
     @staticmethod
     def get_all(db: Session):
-        return db.query(Contact).all()
+        return db.query(ContactMessage).all()
 
     @staticmethod
     def get_by_membership_id(db: Session, membership_id: str):
-        return db.query(Contact).filter(
-            Contact.membership_id == membership_id
+        return db.query(ContactMessage).filter(
+            ContactMessage.membership_id == membership_id
         ).first()
 
     @staticmethod
     def delete_by_membership_id(db: Session, membership_id: str):
-        contact = db.query(Contact).filter(
-            Contact.membership_id == membership_id
+        contact = db.query(ContactMessage).filter(
+            ContactMessage.membership_id == membership_id
         ).first()
 
         if contact:
