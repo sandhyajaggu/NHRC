@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from app.models.member import Member
 from app.models.user import User, UserRole
 from app.core.security import hash_password
@@ -51,17 +53,13 @@ class AdminService:
 
     @staticmethod
     def delete_user(db: Session, membership_id: str):
-        return AdminRepository.delete_user(db, membership_id)
-    
-    @staticmethod
-    def delete_member(db, membership_id: str):
+        deleted = AdminRepository.delete_user(db, membership_id)
 
-        result = AdminRepository.delete_member(db, membership_id)
-
-        if not result:
-            raise Exception("Member not found")
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Member not found")
 
         return {
+            "success": True,
             "message": "Member deleted successfully",
             "membership_id": membership_id
         }
