@@ -26,7 +26,7 @@ class EmployeeRepository:
             Employee
         ).join(
             Employee,
-            Employee.member_id == Member.ids
+            Employee.member_id == Member.id
         ).filter(
             Member.candidate_type == "employee"
         ).all()
