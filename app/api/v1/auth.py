@@ -39,20 +39,30 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     # CHECK EXISTING USER
     # ==============================
     existing = db.query(Member).filter(Member.email == payload.email).first()
+
     if existing:
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(
+            status_code=400,
+            detail="User already exists"
+        )
 
     # ==============================
     # PASSWORD VALIDATION
     # ==============================
     if payload.password != payload.confirm_password:
-        raise HTTPException(status_code=400, detail="Passwords do not match")
+        raise HTTPException(
+            status_code=400,
+            detail="Passwords do not match"
+        )
 
     # ==============================
-    # ROLE ASSIGNMENT
+    # BLOCK PUBLIC ADMIN REGISTRATION
     # ==============================
     if payload.candidate_type == "admin":
-        raise HTTPException(status_code=403, detail="Admin registration is not allowed")
+        raise HTTPException(
+            status_code=403,
+            detail="Admin registration is not allowed"
+        )
 
     role = "user"
 
@@ -62,55 +72,81 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     if payload.candidate_type == "employee":
 
         if not payload.otp:
-            raise HTTPException(status_code=400, detail="OTP required")
+            raise HTTPException(
+                status_code=400,
+                detail="OTP required"
+            )
 
         otp_record = db.query(OTPVerification).filter(
             OTPVerification.email == payload.email
         ).order_by(OTPVerification.id.desc()).first()
 
         if not otp_record:
-            raise HTTPException(status_code=400, detail="OTP not found")
+            raise HTTPException(
+                status_code=400,
+                detail="OTP not found"
+            )
 
         if otp_record.is_used:
-            raise HTTPException(status_code=400, detail="OTP already used")
+            raise HTTPException(
+                status_code=400,
+                detail="OTP already used"
+            )
 
         if otp_record.expires_at < datetime.utcnow():
-            raise HTTPException(status_code=400, detail="OTP expired")
+            raise HTTPException(
+                status_code=400,
+                detail="OTP expired"
+            )
 
         if otp_record.otp != payload.otp:
-            raise HTTPException(status_code=400, detail="Invalid OTP")
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid OTP"
+            )
 
         if not otp_record.is_verified:
-            raise HTTPException(status_code=400, detail="OTP not verified")
+            raise HTTPException(
+                status_code=400,
+                detail="OTP not verified"
+            )
 
-        # mark OTP used
         otp_record.is_used = True
         db.commit()
 
     # ==============================
-    # STUDENT / REPRESENTATIVE → CAPTCHA
+    # STUDENT / REPRESENTATIVE
     # ==============================
     elif payload.candidate_type in ["student", "representative"]:
 
         if not payload.captcha or not payload.captcha_id:
-            raise HTTPException(status_code=400, detail="Captcha required")
+            raise HTTPException(
+                status_code=400,
+                detail="Captcha required"
+            )
 
-        if not verify_captcha(payload.captcha_id, payload.captcha):
-            raise HTTPException(status_code=400, detail="Invalid captcha")
-
-    # ==============================
-    # ADMIN → NO VALIDATION REQUIRED
-    # ==============================
-    elif payload.candidate_type == "admin":
-        pass
+        if not verify_captcha(
+            payload.captcha_id,
+            payload.captcha
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid captcha"
+            )
 
     else:
-        raise HTTPException(status_code=400, detail="Invalid candidate type")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid candidate type"
+        )
 
     # ==============================
     # CREATE MEMBER
     # ==============================
-    membership_id = generate_membership_id(db, payload.candidate_type)
+    membership_id = generate_membership_id(
+        db,
+        payload.candidate_type
+    )
 
     member = Member(
         membership_id=membership_id,

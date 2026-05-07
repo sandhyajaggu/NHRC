@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from app.models.member import Member
 from app.models.employee import Employee
+from fastapi.encoders import jsonable_encoder
+
 
 
 class EmployeeRepository:
@@ -20,27 +22,19 @@ class EmployeeRepository:
     def get_employees_with_details(db: Session):
 
         results = db.query(
-            Member.id,
-            Member.membership_id,
-            Member.full_name,
-            Member.mobile,
-            Member.status,
-            Employee.designation
+            Member,
+            Employee
         ).join(
             Employee,
-            Employee.member_id == Member.id
+            Employee.member_id == Member.ids
         ).filter(
             Member.candidate_type == "employee"
         ).all()
 
-        # convert to response format
-        return [
+        return jsonable_encoder([
             {
-                "membership_id": row.membership_id,
-                "name": row.full_name,
-                "phone": row.mobile,
-                "status": row.status,
-                "designation": row.designation
+                "member": member,
+                "details": employee
             }
-            for row in results
-        ]
+            for member, employee in results
+        ])
