@@ -40,54 +40,37 @@ class RepresentativeRepository:
     @staticmethod
     def get_representatives_with_details(db: Session):
 
-        results = []
-
-        university = db.query(
-            Member,
-            RepresentativeUniversityDetails
-        ).join(
-            RepresentativeUniversityDetails,
-            RepresentativeUniversityDetails.member_id == Member.id
-        ).filter(
+        members = db.query(Member).filter(
             Member.candidate_type == "representative"
         ).all()
 
-        autonomous = db.query(
-            Member,
-            RepresentativeAutonomousDetails
-        ).join(
-            RepresentativeAutonomousDetails,
-            RepresentativeAutonomousDetails.member_id == Member.id
-        ).filter(
-            Member.candidate_type == "representative"
-        ).all()
+        final_data = []
 
-        both = db.query(
-            Member,
-            RepresentativeBothDetails
-        ).join(
-            RepresentativeBothDetails,
-            RepresentativeBothDetails.member_id == Member.id
-        ).filter(
-            Member.candidate_type == "representative"
-        ).all()
+        for member in members:
 
-        for member, details in university:
-            results.append({
+            details = (
+                db.query(RepresentativeUniversityDetails)
+                .filter(RepresentativeUniversityDetails.member_id == member.id)
+                .first()
+            )
+
+            if not details:
+                details = (
+                    db.query(RepresentativeAutonomousDetails)
+                    .filter(RepresentativeAutonomousDetails.member_id == member.id)
+                    .first()
+                )
+
+            if not details:
+                details = (
+                    db.query(RepresentativeBothDetails)
+                    .filter(RepresentativeBothDetails.member_id == member.id)
+                    .first()
+                )
+
+            final_data.append({
                 "member": member,
                 "details": details
             })
 
-        for member, details in autonomous:
-            results.append({
-                "member": member,
-                "details": details
-            })
-
-        for member, details in both:
-            results.append({
-                "member": member,
-                "details": details
-            })
-
-        return jsonable_encoder(results)
+        return jsonable_encoder(final_data)
