@@ -47,12 +47,14 @@ class RepresentativeRepository:
         final_data = []
 
         for member in members:
+            print("MEMBER ID:", member.id)
 
             details = (
                 db.query(RepresentativeUniversityDetails)
                 .filter(RepresentativeUniversityDetails.member_id == member.id)
                 .first()
             )
+            print("UNIVERSITY DETAILS:", details)
 
             if not details:
                 details = (
@@ -60,6 +62,7 @@ class RepresentativeRepository:
                     .filter(RepresentativeAutonomousDetails.member_id == member.id)
                     .first()
                 )
+                print("AUTONOMOUS DETAILS:", details)
 
             if not details:
                 details = (
@@ -67,6 +70,7 @@ class RepresentativeRepository:
                     .filter(RepresentativeBothDetails.member_id == member.id)
                     .first()
                 )
+                print("BOTH DETAILS:", details)
 
             final_data.append({
                 "member": member,
