@@ -1,3 +1,4 @@
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models.member import Member
@@ -35,41 +36,58 @@ class RepresentativeRepository:
         return obj
 
     #  NEW METHOD
+
     @staticmethod
     def get_representatives_with_details(db: Session):
 
-        results = db.query(
-            Member.membership_id,
-            Member.full_name,
-            Member.mobile,
-            Member.status,
+        results = []
 
-            func.coalesce(
-                RepresentativeUniversityDetails.designation,
-                RepresentativeAutonomousDetails.designation,
-                RepresentativeBothDetails.designation
-            ).label("designation")
-
-        ).outerjoin(
+        university = db.query(
+            Member,
+            RepresentativeUniversityDetails
+        ).join(
             RepresentativeUniversityDetails,
             RepresentativeUniversityDetails.member_id == Member.id
-        ).outerjoin(
+        ).filter(
+            Member.candidate_type == "representative"
+        ).all()
+
+        autonomous = db.query(
+            Member,
+            RepresentativeAutonomousDetails
+        ).join(
             RepresentativeAutonomousDetails,
             RepresentativeAutonomousDetails.member_id == Member.id
-        ).outerjoin(
+        ).filter(
+            Member.candidate_type == "representative"
+        ).all()
+
+        both = db.query(
+            Member,
+            RepresentativeBothDetails
+        ).join(
             RepresentativeBothDetails,
             RepresentativeBothDetails.member_id == Member.id
         ).filter(
             Member.candidate_type == "representative"
         ).all()
 
-        return [
-            {
-                "membership_id": row.membership_id,
-                "name": row.full_name,
-                "phone": row.mobile,
-                "status": row.status,
-                "designation": row.designation
-            }
-            for row in results
-        ]
+        for member, details in university:
+            results.append({
+                "member": member,
+                "details": details
+            })
+
+        for member, details in autonomous:
+            results.append({
+                "member": member,
+                "details": details
+            })
+
+        for member, details in both:
+            results.append({
+                "member": member,
+                "details": details
+            })
+
+        return jsonable_encoder(results)
