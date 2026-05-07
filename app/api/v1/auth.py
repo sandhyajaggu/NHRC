@@ -192,39 +192,94 @@ def admin_login(payload: LoginRequest, db: Session = Depends(get_db)):
 @router.post("/login")
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
-    #  Fetch user
-    user = db.query(Member).filter(Member.email == payload.email).first()
+    # fetch user
+    user = db.query(Member).filter(
+        Member.email == payload.email
+    ).first()
 
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    #  Verify password
-    if not verify_password(payload.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    #  ADD STATUS CHECK HERE
-    if user.status == "pending":
-        raise HTTPException(status_code=403, detail="Your account is pending approval")
-
-    if user.status == "rejected":
-        raise HTTPException(status_code=403, detail="Your account was rejected by admin")
-
-    
-    if user.status != "approved":
         raise HTTPException(
-            status_code=403,
-            detail=f"Your account is {user.status}. Please contact admin."
+            status_code=401,
+            detail="Invalid credentials"
         )
 
-    # 4. Generate token
+    # password check
+    if not verify_password(payload.password, user.password_hash):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials"
+        )
+
+    # ✅ approval check
+    if user.status == "pending":
+        raise HTTPException(
+            status_code=403,
+            detail="Your account is pending approval"
+        )
+
+    if user.status == "rejected":
+        raise HTTPException(
+            status_code=403,
+            detail="Your account was rejected by admin"
+        )
+
+    # token
     token = create_access_token({
         "sub": user.email,
         "role": user.role
     })
 
+    # ✅ fetch extra details based on candidate type
+    details = None
+
+    if user.candidate_type == "employee":
+        from app.models.employee import Employee
+
+        details = db.query(Employee).filter(
+            Employee.member_id == user.id
+        ).first()
+
+    elif user.candidate_type == "student":
+        from app.models.student import (
+            StudentUniversityDetails,
+            StudentAutonomousDetails
+        )
+
+        details = db.query(StudentUniversityDetails).filter(
+            StudentUniversityDetails.member_id == user.id
+        ).first()
+
+        if not details:
+            details = db.query(StudentAutonomousDetails).filter(
+                StudentAutonomousDetails.member_id == user.id
+            ).first()
+
+    elif user.candidate_type == "representative":
+        from app.models.representative import (
+            RepresentativeUniversityDetails,
+            RepresentativeAutonomousDetails,
+            RepresentativeBothDetails
+        )
+
+        details = db.query(RepresentativeUniversityDetails).filter(
+            RepresentativeUniversityDetails.member_id == user.id
+        ).first()
+
+        if not details:
+            details = db.query(RepresentativeAutonomousDetails).filter(
+                RepresentativeAutonomousDetails.member_id == user.id
+            ).first()
+
+        if not details:
+            details = db.query(RepresentativeBothDetails).filter(
+                RepresentativeBothDetails.member_id == user.id
+            ).first()
+
     return {
         "access_token": token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "member": user,
+        "details": details
     }
 # ================= REFRESH =================
 @router.post("/refresh")
