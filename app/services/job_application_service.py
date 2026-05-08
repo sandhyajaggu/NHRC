@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 
+from app.models.job import Job
 from app.models.member import Member
 
 from app.repositories.job_repository import JobRepository
@@ -56,4 +57,27 @@ class JobApplicationService:
             member.id
         )
 
-        return applications
+        response = []
+
+        for application in applications:
+
+            job = db.query(Job).filter(
+                Job.id == application.job_id
+            ).first()
+
+            response.append({
+
+                "application_id": application.id,
+
+                "job_id": application.job_id,
+
+                "job_title": job.title if job else None,
+
+                "company_name": job.company_name if job else None,
+
+                "status": application.status,
+
+                "applied_at": application.applied_at
+            })
+
+        return response

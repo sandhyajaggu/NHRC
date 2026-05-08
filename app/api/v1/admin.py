@@ -184,15 +184,15 @@ def apply_job(
 @router.get("/{job_id}/applications")
 def get_job_applications(
     job_id: int,
-    membership_id: str,
+    
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin)
 ):
 
     return JobApplicationService.get_job_applications(
         db,
-        job_id,
-        membership_id
+        job_id
+        
     )
 @router.delete("/{job_id}")
 def delete_job(
