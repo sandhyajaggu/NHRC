@@ -1,66 +1,54 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Float,
-    Text,
-    Date,
-    DateTime,
-    ForeignKey
-)
-
+from sqlalchemy import Column, Integer, String, Text, DateTime
 from datetime import datetime
+
 from app.db.base import Base
 
 
 class Job(Base):
+
     __tablename__ = "jobs"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    posted_by = Column(Integer, ForeignKey("members.id"))
-
-    posted_by_type = Column(String)
-    # admin / employee
-
-    membership_id = Column(String)
-
-    job_title = Column(String)
+    # basic
+    title = Column(String)
     company_name = Column(String)
-    department = Column(String)
 
+    department = Column(String)
     work_mode = Column(String)
 
-    roles_responsibilities = Column(Text)
-
-    qualification_required = Column(String)
-
-    min_experience = Column(Integer)
-    max_experience = Column(Integer)
-
-    min_salary = Column(Float)
-    max_salary = Column(Float)
-
-    perks_benefits = Column(Text)
-
+    description = Column(Text)
     required_skills = Column(Text)
 
-    job_location = Column(String)
-    job_locality = Column(String)
+    qualification = Column(String)
+
+    experience_min = Column(Integer)
+    experience_max = Column(Integer)
+
+    salary_min = Column(Integer)
+    salary_max = Column(Integer)
+
+    perks = Column(Text)
+
+    location = Column(String)
+    locality = Column(String)
 
     openings = Column(Integer)
 
-    application_deadline = Column(Date)
+    application_deadline = Column(String)
 
     whatsapp_number = Column(String)
 
     logo = Column(String)
 
+    # job workflow
     status = Column(String, default="pending")
-    # pending / approved / rejected
+
+    created_by = Column(Integer)
+    created_by_role = Column(String)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
     approved_at = Column(DateTime, nullable=True)
 
-    approved_by = Column(Integer, nullable=True)
+    rejected_at = Column(DateTime, nullable=True)

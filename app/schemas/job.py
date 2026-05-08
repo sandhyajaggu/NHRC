@@ -1,35 +1,33 @@
 from pydantic import BaseModel
-from datetime import date
 
 
 class JobCreate(BaseModel):
 
-    job_title: str
+    title: str
     company_name: str
-    department: str
 
+    department: str
     work_mode: str
 
-    roles_responsibilities: str
-
-    qualification_required: str
-
-    min_experience: int
-    max_experience: int
-
-    min_salary: float
-    max_salary: float
-
-    perks_benefits: str
-
+    description: str
     required_skills: str
 
-    job_location: str
-    job_locality: str
+    qualification: str
+
+    experience_min: int
+    experience_max: int
+
+    salary_min: int
+    salary_max: int
+
+    perks: str
+
+    location: str
+    locality: str
 
     openings: int
 
-    application_deadline: date
+    application_deadline: str
 
     whatsapp_number: str
 

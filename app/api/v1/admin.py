@@ -103,7 +103,7 @@ def bulk_delete_members(
 def create_job(
     payload: JobCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user: Member = Depends(get_current_user)
 ):
 
     return JobService.create_job(
@@ -184,11 +184,31 @@ def apply_job(
 @router.get("/{job_id}/applications")
 def get_job_applications(
     job_id: int,
+    membership_id: str,
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin)
 ):
 
     return JobApplicationService.get_job_applications(
         db,
+        job_id,
+        membership_id
+    )
+@router.delete("/{job_id}")
+def delete_job(
+    job_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    return JobService.delete_job(
+        db,
         job_id
     )
+@router.delete("/")
+def delete_all_jobs(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    return JobService.delete_all_jobs(db)

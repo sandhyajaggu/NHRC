@@ -39,9 +39,21 @@ class JobApplicationService:
         }
 
     @staticmethod
-    def get_job_applications(db, job_id):
+    def get_member_applications(db, membership_id):
 
-        return JobApplicationRepository.get_job_applications(
+        member = db.query(Member).filter(
+            Member.membership_id == membership_id
+        ).first()
+
+        if not member:
+            raise HTTPException(
+                status_code=404,
+                detail="Member not found"
+            )
+
+        applications = JobApplicationRepository.get_by_member(
             db,
-            job_id
+            member.id
         )
+
+        return applications
