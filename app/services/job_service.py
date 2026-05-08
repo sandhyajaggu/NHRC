@@ -53,10 +53,22 @@ class JobService:
         if not job:
             raise HTTPException(404, "Job not found")
 
+        # admin jobs already approved
+        if job.posted_by_type == "admin":
+            raise HTTPException(
+                status_code=400,
+                detail="Admin jobs do not require approval"
+            )
+
+        if job.status == "approved":
+            raise HTTPException(
+                status_code=400,
+                detail="Job already approved"
+            )
+
         job.approved_at = datetime.utcnow()
 
         return JobRepository.approve_job(db, job)
-
     @staticmethod
     def reject_job(db, job_id: int):
 
@@ -65,8 +77,20 @@ class JobService:
         if not job:
             raise HTTPException(404, "Job not found")
 
-        return JobRepository.reject_job(db, job)
+        # admin jobs cannot be rejected
+        if job.posted_by_type == "admin":
+            raise HTTPException(
+                status_code=400,
+                detail="Admin jobs cannot be rejected"
+            )
 
+        if job.status == "rejected":
+            raise HTTPException(
+                status_code=400,
+                detail="Job already rejected"
+            )
+
+        return JobRepository.reject_job(db, job)
     @staticmethod
     def get_job_by_id(db, job_id: int):
 
