@@ -198,12 +198,4 @@ class JobService:
         }
 
 
-    @staticmethod
-    def delete_all_jobs(db):
-
-        deleted_count = JobRepository.delete_all_jobs(db)
-
-        return {
-            "message": "All jobs deleted successfully",
-            "deleted_count": deleted_count
-        }
+    

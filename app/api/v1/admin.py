@@ -205,10 +205,3 @@ def delete_job(
         db,
         job_id
     )
-@router.delete("/")
-def delete_all_jobs(
-    db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
-):
-
-    return JobService.delete_all_jobs(db)

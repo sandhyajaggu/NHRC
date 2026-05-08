@@ -69,11 +69,4 @@ class JobRepository:
         return True
 
 
-    @staticmethod
-    def delete_all_jobs(db: Session):
-
-        deleted = db.query(Job).delete()
-
-        db.commit()
-
-        return deleted
+    
