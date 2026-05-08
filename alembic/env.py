@@ -4,8 +4,9 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from app.db.base import Base
+#from app.db.base import Base
 from app.models import *
+from app.db.base_class import Base
 
 from app.models.member import Member
 from app.models.employee import Employee
