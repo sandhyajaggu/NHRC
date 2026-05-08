@@ -181,7 +181,7 @@ def apply_job(
     )
 
 
-@router.get("/{job_id}/applications")
+@router.get("/jobs/{job_id}/applications")
 def get_job_applications(
     job_id: int,
     
