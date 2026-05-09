@@ -30,3 +30,6 @@ class JobApplicationRepository:
         return db.query(JobApplication).filter(
             JobApplication.id == application_id
         ).first()
+    
+    
+    

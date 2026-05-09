@@ -38,7 +38,7 @@ class JobApplicationService:
             current_user.id
         )
 
-    # ✅ ADD THIS METHOD
+    #  ADD THIS METHOD
     @staticmethod
     def get_job_applications(db, job_id):
 
@@ -52,7 +52,7 @@ class JobApplicationService:
                 detail="Job not found"
             )
 
-        applications = JobApplicationRepository.get_by_job(
+        applications = JobApplicationRepository.get_job_applications(
             db,
             job_id
         )
