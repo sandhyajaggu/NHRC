@@ -225,7 +225,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
     # token
     token = create_access_token({
-        "sub": user.email,
+        "sub": user.membership_id,
         "role": user.role
     })
 

@@ -9,6 +9,22 @@ from app.core.security import oauth2_scheme
 
 
 
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
+from app.models.member import Member
+
+SECRET_KEY = "YOUR_SECRET_KEY"
+ALGORITHM = "HS256"
+
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/auth/login"
+)
+
+
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
@@ -16,7 +32,7 @@ def get_current_user(
 
     credentials_exception = HTTPException(
         status_code=401,
-        detail="Invalid authentication"
+        detail="Could not validate credentials"
     )
 
     try:
@@ -27,7 +43,7 @@ def get_current_user(
             algorithms=[ALGORITHM]
         )
 
-        membership_id = payload.get("sub")
+        membership_id: str = payload.get("sub")
 
         if membership_id is None:
             raise credentials_exception
@@ -35,13 +51,15 @@ def get_current_user(
     except JWTError:
         raise credentials_exception
 
+    # VERY IMPORTANT
     user = db.query(Member).filter(
         Member.membership_id == membership_id
     ).first()
 
-    if not user:
+    if user is None:
         raise credentials_exception
 
+    # RETURN FULL USER OBJECT
     return user
 
 def get_current_admin(

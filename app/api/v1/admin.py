@@ -121,12 +121,7 @@ def get_all_jobs(
     return JobService.get_all_jobs(db)
 
 
-@router.get("/student")
-def get_student_jobs(
-    db: Session = Depends(get_db)
-):
 
-    return JobService.get_student_jobs(db)
 
 
 @router.get("/{job_id}")
@@ -167,18 +162,7 @@ def reject_job(
     )
 
 
-@router.post("/{job_id}/apply")
-def apply_job(
-    job_id: int,
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
-):
 
-    return JobApplicationService.apply_job(
-        db,
-        job_id,
-        current_user
-    )
 
 
 @router.get("/jobs/{job_id}/applications")
