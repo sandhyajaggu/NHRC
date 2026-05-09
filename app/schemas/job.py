@@ -1,34 +1,43 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
-class JobCreate(BaseModel):
+class CreateJobRequest(BaseModel):
 
-    title: str
+    membership_id: str
+
+    job_title: str
     company_name: str
 
-    department: str
-    work_mode: str
+    department: Optional[str] = None
 
-    description: str
-    required_skills: str
+    work_mode: Optional[str] = None
 
-    qualification: str
+    roles_responsibilities: Optional[str] = None
 
-    experience_min: int
-    experience_max: int
+    qualification: Optional[str] = None
 
-    salary_min: int
-    salary_max: int
+    min_experience: Optional[int] = None
+    max_experience: Optional[int] = None
 
-    perks: str
+    min_salary: Optional[int] = None
+    max_salary: Optional[int] = None
 
-    location: str
-    locality: str
+    perks: Optional[str] = None
 
-    openings: int
+    job_location: Optional[str] = None
+    job_locality: Optional[str] = None
 
-    application_deadline: str
+    openings: Optional[int] = None
 
-    whatsapp_number: str
+    application_deadline: Optional[str] = None
 
-    logo: str
+    whatsapp_number: Optional[str] = None
+
+    logo: Optional[str] = None
+
+
+class ApplyJobRequest(BaseModel):
+
+    job_id: int
+    membership_id: str

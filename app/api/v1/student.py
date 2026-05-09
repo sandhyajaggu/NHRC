@@ -2,50 +2,59 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.core.security import get_current_user
+
+from app.schemas import job
 
 from app.services.job_service import JobService
-from app.services.job_application_service import JobApplicationService
+from app.services.job_application_service import (
+    JobApplicationService
+)
 
 router = APIRouter(
-    prefix="/student",
+    prefix="/student/jobs",
     tags=["Student"]
 )
 
 
-# GET APPROVED JOBS
-@router.get("/jobs")
+@router.get("/")
 def get_jobs(
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
 
-    return JobService.get_student_jobs(db)
+    return JobService.get_all_jobs(db)
 
 
-# APPLY JOB
-@router.post("/jobs/{job_id}/apply")
-def apply_job(
+@router.get("/{job_id}")
+def get_job_details(
     job_id: int,
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
 
-    return JobApplicationService.apply_job(
+    return JobService.get_job_details(
         db,
-        job_id,
-        current_user
+        job_id
     )
 
 
-# MY APPLICATIONS
-@router.get("/my-applications")
-def my_applications(
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+@router.post("/apply")
+def apply_job(
+    payload: job.ApplyJobRequest,
+    db: Session = Depends(get_db)
 ):
 
-    return JobApplicationService.get_job_applications(
+    return JobService.apply_job(
         db,
-        current_user.membership_id
+        payload
+    )
+
+
+@router.get("/applications/{membership_id}")
+def get_my_applications(
+    membership_id: str,
+    db: Session = Depends(get_db)
+):
+
+    return JobApplicationService.get_student_applications(
+        db,
+        membership_id
     )

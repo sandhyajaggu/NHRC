@@ -1,25 +1,20 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    ForeignKey,
-    DateTime
-)
-
-from datetime import datetime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from app.db.base import Base
+from datetime import datetime
 
 
 class JobApplication(Base):
     __tablename__ = "job_applications"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
 
     job_id = Column(Integer, ForeignKey("jobs.id"))
 
-    member_id = Column(Integer, ForeignKey("members.id"))
+    membership_id = Column(String)
 
-    status = Column(String, default="applied")
-    # applied / shortlist / rejected
+    application_status = Column(
+        String,
+        default="applied"
+    )
 
-    applied_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)

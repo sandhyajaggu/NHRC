@@ -10,7 +10,7 @@ from app.schemas.admin import *
 from app.schemas.member import MemberStatusUpdate
 from app.schemas.member import BulkDeleteRequest
 
-from app.schemas.job import JobCreate
+from app.schemas.job import CreateJobRequest, ApplyJobRequest
 
 from app.services.job_service import JobService
 from app.services.job_application_service import JobApplicationService
@@ -99,48 +99,39 @@ def bulk_delete_members(
 
 #=================== JOBS ===========================================================
 
+
 @router.post("/")
 def create_job(
-    payload: JobCreate,
-    db: Session = Depends(get_db),
-    current_user: Member = Depends(get_current_user)
+    payload: ApplyJobRequest,
+    db: Session = Depends(get_db)
 ):
 
-    return JobService.create_job(
+    return JobService.create_admin_job(
         db,
-        payload,
-        current_user
+        payload
     )
 
 
 @router.get("/")
-def get_all_jobs(
+def get_jobs(
     db: Session = Depends(get_db)
 ):
 
     return JobService.get_all_jobs(db)
 
 
-
-
-
-@router.get("/{job_id}")
-def get_job_by_id(
-    job_id: int,
+@router.get("/pending")
+def get_pending_jobs(
     db: Session = Depends(get_db)
 ):
 
-    return JobService.get_job_by_id(
-        db,
-        job_id
-    )
+    return JobService.get_pending_jobs(db)
 
 
 @router.put("/{job_id}/approve")
 def approve_job(
     job_id: int,
-    db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    db: Session = Depends(get_db)
 ):
 
     return JobService.approve_job(
@@ -152,8 +143,7 @@ def approve_job(
 @router.put("/{job_id}/reject")
 def reject_job(
     job_id: int,
-    db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    db: Session = Depends(get_db)
 ):
 
     return JobService.reject_job(
@@ -162,30 +152,72 @@ def reject_job(
     )
 
 
+@router.get("/{job_id}")
+def get_job_details(
+    job_id: int,
+    db: Session = Depends(get_db)
+):
+
+    return JobService.get_job_details(
+        db,
+        job_id
+    )
 
 
-
-@router.get("/jobs/{job_id}/applications")
+@router.get("/{job_id}/applications")
 def get_job_applications(
     job_id: int,
-    
-    db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    db: Session = Depends(get_db)
 ):
 
     return JobApplicationService.get_job_applications(
         db,
         job_id
-        
+    )
+
+
+@router.put("/applications/{application_id}/shortlist")
+def shortlist_application(
+    application_id: int,
+    db: Session = Depends(get_db)
+):
+
+    return JobApplicationService.shortlist_application(
+        db,
+        application_id
+    )
+
+
+@router.put("/applications/{application_id}/reject")
+def reject_application(
+    application_id: int,
+    db: Session = Depends(get_db)
+):
+
+    return JobApplicationService.reject_application(
+        db,
+        application_id
     )
 @router.delete("/{job_id}")
 def delete_job(
     job_id: int,
-    db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    db: Session = Depends(get_db)
 ):
 
     return JobService.delete_job(
         db,
         job_id
+    )
+
+@router.put("/{job_id}")
+def update_job(
+    job_id: int,
+    payload: CreateJobRequest,
+    db: Session = Depends(get_db)
+):
+
+    return JobService.update_job(
+        db,
+        job_id,
+        payload
     )

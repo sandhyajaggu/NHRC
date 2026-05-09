@@ -1,38 +1,19 @@
 from sqlalchemy.orm import Session
-
 from app.models.job_application import JobApplication
 
 
 class JobApplicationRepository:
 
     @staticmethod
-    def create_application(db, job_id, member_id):
+    def create(db: Session, payload):
 
-        application = JobApplication(
-            job_id=job_id,
-            member_id=member_id,
-            status="applied"
-        )
+        obj = JobApplication(**payload)
 
-        db.add(application)
-
+        db.add(obj)
         db.commit()
+        db.refresh(obj)
 
-        db.refresh(application)
-
-        return application
-
-    @staticmethod
-    def get_existing_application(
-        db,
-        job_id,
-        member_id
-    ):
-
-        return db.query(JobApplication).filter(
-            JobApplication.job_id == job_id,
-            JobApplication.member_id == member_id
-        ).first()
+        return obj
 
     @staticmethod
     def get_job_applications(
@@ -53,3 +34,27 @@ class JobApplicationRepository:
         return db.query(JobApplication).filter(
             JobApplication.id == application_id
         ).first()
+
+    @staticmethod
+    def update_status(
+        db: Session,
+        application,
+        status
+    ):
+
+        application.application_status = status
+
+        db.commit()
+        db.refresh(application)
+
+        return application
+
+    @staticmethod
+    def get_student_applications(
+        db: Session,
+        membership_id: str
+    ):
+
+        return db.query(JobApplication).filter(
+            JobApplication.membership_id == membership_id
+        ).all()
