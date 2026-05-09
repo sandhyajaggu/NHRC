@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy import Boolean, Column, Date, Integer, String, Text, DateTime
 from datetime import datetime
 
 from app.db.base import Base
@@ -35,7 +35,7 @@ class Job(Base):
 
     openings = Column(Integer)
 
-    application_deadline = Column(String)
+    application_deadline = Column(Date, nullable=True)
 
     whatsapp_number = Column(String)
 
@@ -52,3 +52,4 @@ class Job(Base):
     approved_at = Column(DateTime, nullable=True)
 
     rejected_at = Column(DateTime, nullable=True)
+    is_active = Column(Boolean, default=True)

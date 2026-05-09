@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import HTTPException
 
 from app.models.member import Member
@@ -13,7 +15,13 @@ class JobApplicationService:
     @staticmethod
     def apply_job(db, job_id, current_user):
 
-        # check job exists
+        # only students can apply
+        if current_user.role != "student":
+            raise HTTPException(
+                status_code=403,
+                detail="Only students can apply for jobs"
+            )
+
         job = db.query(Job).filter(
             Job.id == job_id
         ).first()
@@ -24,7 +32,31 @@ class JobApplicationService:
                 detail="Job not found"
             )
 
-        # already applied check
+        # only approved jobs
+        if job.status != "approved":
+            raise HTTPException(
+                status_code=400,
+                detail="Job is not approved yet"
+            )
+
+        # closed job validation
+        if job.is_active is False:
+            raise HTTPException(
+                status_code=400,
+                detail="Job is closed"
+            )
+
+        # deadline validation
+        if (
+            job.application_deadline and
+            job.application_deadline < date.today()
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Application deadline expired"
+            )
+
+        # already applied validation
         existing = JobApplicationRepository.get_existing_application(
             db,
             job_id,
@@ -37,20 +69,11 @@ class JobApplicationService:
                 detail="Already applied for this job"
             )
 
-        # create application
-        application = JobApplicationRepository.create_application(
+        return JobApplicationRepository.create_application(
             db,
             job_id,
             current_user.id
         )
-
-        return {
-            "message": "Applied successfully",
-            "application_id": application.id,
-            "job_id": application.job_id,
-            "member_id": application.member_id,
-            "status": application.status
-        }
 
     @staticmethod
     def get_job_applications(db, job_id):
@@ -97,7 +120,7 @@ class JobApplicationService:
                 "state": member.state,
                 "district": member.district,
                 "pincode": member.pincode,
-
+ 
                 # application details
                 "application_status": application.status,
                 "applied_at": application.applied_at
