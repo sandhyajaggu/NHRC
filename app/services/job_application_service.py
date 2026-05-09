@@ -2,7 +2,10 @@ from fastapi import HTTPException
 
 from app.models.member import Member
 from app.models.job import Job
-from app.repositories.job_application_repository import JobApplicationRepository
+
+from app.repositories.job_application_repository import (
+    JobApplicationRepository
+)
 
 
 class JobApplicationService:
@@ -10,6 +13,7 @@ class JobApplicationService:
     @staticmethod
     def apply_job(db, job_id, current_user):
 
+        # check job exists
         job = db.query(Job).filter(
             Job.id == job_id
         ).first()
@@ -20,6 +24,7 @@ class JobApplicationService:
                 detail="Job not found"
             )
 
+        # already applied check
         existing = JobApplicationRepository.get_existing_application(
             db,
             job_id,
@@ -29,19 +34,28 @@ class JobApplicationService:
         if existing:
             raise HTTPException(
                 status_code=400,
-                detail="Already applied"
+                detail="Already applied for this job"
             )
 
-        return JobApplicationRepository.create_application(
+        # create application
+        application = JobApplicationRepository.create_application(
             db,
             job_id,
             current_user.id
         )
 
-    #  ADD THIS METHOD
+        return {
+            "message": "Applied successfully",
+            "application_id": application.id,
+            "job_id": application.job_id,
+            "member_id": application.member_id,
+            "status": application.status
+        }
+
     @staticmethod
     def get_job_applications(db, job_id):
 
+        # check job exists
         job = db.query(Job).filter(
             Job.id == job_id
         ).first()
@@ -68,12 +82,62 @@ class JobApplicationService:
             response.append({
                 "application_id": application.id,
                 "job_id": application.job_id,
-                "membership_id": member.membership_id if member else None,
-                "name": member.full_name if member else None,
-                "email": member.email if member else None,
-                "mobile": member.mobile if member else None,
+
+                "membership_id":
+                    member.membership_id if member else None,
+
+                "name":
+                    member.full_name if member else None,
+
+                "email":
+                    member.email if member else None,
+
+                "mobile":
+                    member.mobile if member else None,
+
                 "status": application.status,
+
                 "applied_at": application.applied_at
             })
 
         return response
+
+    @staticmethod
+    def get_application_by_id(db, application_id):
+
+        application = JobApplicationRepository.get_application_by_id(
+            db,
+            application_id
+        )
+
+        if not application:
+            raise HTTPException(
+                status_code=404,
+                detail="Application not found"
+            )
+
+        member = db.query(Member).filter(
+            Member.id == application.member_id
+        ).first()
+
+        return {
+            "application_id": application.id,
+            "job_id": application.job_id,
+
+            "membership_id":
+                member.membership_id if member else None,
+
+            "name":
+                member.full_name if member else None,
+
+            "email":
+                member.email if member else None,
+
+            "mobile":
+                member.mobile if member else None,
+
+            "status": application.status,
+
+            "applied_at": application.applied_at
+        }
+    
