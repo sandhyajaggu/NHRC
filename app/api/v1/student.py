@@ -11,7 +11,7 @@ from app.services.job_application_service import (
 )
 
 router = APIRouter(
-    prefix="/student/jobs",
+    prefix="/student",
     tags=["Student"]
 )
 

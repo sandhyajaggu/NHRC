@@ -8,8 +8,8 @@ from app.schemas.job import CreateJobRequest
 from app.services.job_service import JobService
 
 router = APIRouter(
-    prefix="/hr/jobs",
-    tags=["HR Jobs"]
+    prefix="/hr",
+    tags=["HR"]
 )
 
 
