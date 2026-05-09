@@ -55,7 +55,6 @@ class JobApplicationService:
     @staticmethod
     def get_job_applications(db, job_id):
 
-        # check job exists
         job = db.query(Job).filter(
             Job.id == job_id
         ).first()
@@ -75,28 +74,32 @@ class JobApplicationService:
 
         for application in applications:
 
+            # applicant member
             member = db.query(Member).filter(
                 Member.id == application.member_id
             ).first()
+
+            if not member:
+                continue
 
             response.append({
                 "application_id": application.id,
                 "job_id": application.job_id,
 
-                "membership_id":
-                    member.membership_id if member else None,
+                # student/member details
+                "member_id": member.id,
+                "membership_id": member.membership_id,
+                "name": member.full_name,
+                "email": member.email,
+                "mobile": member.mobile,
+                "gender": member.gender,
+                "dob": member.dob,
+                "state": member.state,
+                "district": member.district,
+                "pincode": member.pincode,
 
-                "name":
-                    member.full_name if member else None,
-
-                "email":
-                    member.email if member else None,
-
-                "mobile":
-                    member.mobile if member else None,
-
-                "status": application.status,
-
+                # application details
+                "application_status": application.status,
                 "applied_at": application.applied_at
             })
 
