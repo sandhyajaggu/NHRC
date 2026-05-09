@@ -5,35 +5,21 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.member import Member
 from app.core.security import SECRET_KEY, ALGORITHM
+from app.core.security import oauth2_scheme
+
 
 
 def get_current_user(
-    authorization: str = Header(None),
+    token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ):
 
-    if not authorization:
-        raise HTTPException(
-            status_code=401,
-            detail="Authorization header missing"
-        )
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Invalid authentication"
+    )
 
     try:
-        parts = authorization.split()
-
-        if len(parts) != 2:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid authorization format"
-            )
-
-        scheme, token = parts
-
-        if scheme.lower() != "bearer":
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid auth scheme"
-            )
 
         payload = jwt.decode(
             token,
@@ -41,36 +27,22 @@ def get_current_user(
             algorithms=[ALGORITHM]
         )
 
-        email = payload.get("sub")
+        membership_id = payload.get("sub")
 
-        if not email:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid token payload"
-            )
-
-    except ExpiredSignatureError:
-        raise HTTPException(
-            status_code=401,
-            detail="Token expired"
-        )
+        if membership_id is None:
+            raise credentials_exception
 
     except JWTError:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid token"
-        )
+        raise credentials_exception
 
-    user = db.query(Member).filter(Member.email == email).first()
+    user = db.query(Member).filter(
+        Member.membership_id == membership_id
+    ).first()
 
     if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="User not found"
-        )
+        raise credentials_exception
 
     return user
-
 
 def get_current_admin(
     user: Member = Depends(get_current_user)

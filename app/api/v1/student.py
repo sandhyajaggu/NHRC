@@ -45,7 +45,7 @@ def my_applications(
     current_user=Depends(get_current_user)
 ):
 
-    return JobApplicationService.get_member_applications(
+    return JobApplicationService.get_job_applications(
         db,
         current_user.membership_id
     )

@@ -6,11 +6,7 @@ from app.models.job_application import JobApplication
 class JobApplicationRepository:
 
     @staticmethod
-    def create_application(
-        db: Session,
-        job_id: int,
-        member_id: int
-    ):
+    def create_application(db, job_id, member_id):
 
         application = JobApplication(
             job_id=job_id,
@@ -28,9 +24,9 @@ class JobApplicationRepository:
 
     @staticmethod
     def get_existing_application(
-        db: Session,
-        job_id: int,
-        member_id: int
+        db,
+        job_id,
+        member_id
     ):
 
         return db.query(JobApplication).filter(

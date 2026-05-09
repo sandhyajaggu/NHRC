@@ -16,12 +16,13 @@ class JobApplicationService:
     def apply_job(db, job_id, current_user):
 
         # only students can apply
-        if current_user.role != "student":
+        if current_user.role.lower() != "student":
             raise HTTPException(
                 status_code=403,
                 detail="Only students can apply for jobs"
             )
 
+        # get job
         job = db.query(Job).filter(
             Job.id == job_id
         ).first()
@@ -33,20 +34,20 @@ class JobApplicationService:
             )
 
         # only approved jobs
-        if job.status != "approved":
+        if job.status.lower() != "approved":
             raise HTTPException(
                 status_code=400,
                 detail="Job is not approved yet"
             )
 
-        # closed job validation
+        # inactive / closed job
         if job.is_active is False:
             raise HTTPException(
                 status_code=400,
                 detail="Job is closed"
             )
 
-        # deadline validation
+        # application deadline check
         if (
             job.application_deadline and
             job.application_deadline < date.today()
@@ -56,7 +57,7 @@ class JobApplicationService:
                 detail="Application deadline expired"
             )
 
-        # already applied validation
+        # already applied
         existing = JobApplicationRepository.get_existing_application(
             db,
             job_id,
@@ -69,11 +70,23 @@ class JobApplicationService:
                 detail="Already applied for this job"
             )
 
-        return JobApplicationRepository.create_application(
+        # create application
+        application = JobApplicationRepository.create_application(
             db,
             job_id,
             current_user.id
         )
+
+        return {
+            "message": "Applied successfully",
+            "application_id": application.id,
+            "job_id": application.job_id,
+            "member_id": current_user.id,
+            "membership_id": current_user.membership_id,
+            "student_name": current_user.full_name,
+            "status": application.status,
+            "applied_at": application.applied_at
+        }
 
     @staticmethod
     def get_job_applications(db, job_id):
@@ -166,4 +179,5 @@ class JobApplicationService:
 
             "applied_at": application.applied_at
         }
+    
     
