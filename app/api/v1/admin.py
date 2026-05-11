@@ -10,12 +10,9 @@ from app.schemas.admin import *
 from app.schemas.member import MemberStatusUpdate
 from app.schemas.member import BulkDeleteRequest
 
-from app.schemas.job import CreateJobRequest, ApplyJobRequest
 
-from app.services.job_service import JobService
-from app.services.job_application_service import JobApplicationService
 
-from app.core.dependencies import (
+from app.core.security import (
     get_current_user,
     get_current_admin
 )
