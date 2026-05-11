@@ -8,8 +8,8 @@ from app.models.job_application import JobApplication
 from app.schemas.job_application import ApplyJobSchema
 
 router = APIRouter(
-    prefix="/student/jobs",
-    tags=["STUDENT JOBS"]
+    prefix="/student",
+    tags=["STUDENT"]
 )
 
 @router.get("/all")
