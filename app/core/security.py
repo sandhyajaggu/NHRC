@@ -4,7 +4,8 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
-from app.core.database import SessionLocal
+from app.core.database import SessionLocal, get_db
+from app.db import session
 from app.models.member import Member
 
 #  CONFIG
@@ -40,36 +41,37 @@ def decode_token(token: str):
 #  Extract user from token (VERY IMPORTANT)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: session = Depends(get_db)
+):
 
-    payload = decode_token(token)
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials"
+    )
 
-    if payload is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid token"
+    try:
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
         )
 
-    #email = payload.get("sub")
-    membership_id = payload.get("sub")
+        membership_id = payload.get("sub")
 
-    if membership_id is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid token"
-        )
+        if membership_id is None:
+            raise credentials_exception
 
-    db = SessionLocal()
+    except JWTError:
+        raise credentials_exception
 
     user = db.query(Member).filter(
         Member.membership_id == membership_id
     ).first()
 
-    if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="User not found"
-        )
+    if user is None:
+        raise credentials_exception
 
     return user
 
@@ -77,8 +79,9 @@ def get_current_admin(
     user: Member = Depends(get_current_user)
 ):
 
-    if user.role != "admin":
+    if user.role.lower().strip() != "admin":
         raise HTTPException(
             status_code=403,
             detail="Admins only"
         )
+    return user
