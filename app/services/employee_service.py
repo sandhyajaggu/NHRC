@@ -39,6 +39,7 @@ class EmployeeService:
 
         if otp_record.is_used:
             raise HTTPException(status_code=400, detail="OTP already used")
+        otp_record.is_used = True
 
         # (optional) expiry check
         from datetime import datetime

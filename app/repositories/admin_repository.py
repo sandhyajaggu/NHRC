@@ -244,9 +244,7 @@ class AdminRepository:
             RepresentativeBothDetails.member_id == member.id
         ).delete()
 
-        # =========================
-        # DELETE MEMBER
-        # =========================
+        
         db.delete(member)
         db.commit()
 
