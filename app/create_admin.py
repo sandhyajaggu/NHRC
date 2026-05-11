@@ -1,4 +1,4 @@
-from app.db.base_class import SessionLocal
+from app.core.database import SessionLocal
 from app.models.member import Member
 from passlib.context import CryptContext
 
