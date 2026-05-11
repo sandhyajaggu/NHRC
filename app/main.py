@@ -10,6 +10,9 @@ from app.models.board_member import BoardMember
 from fastapi.middleware.cors import CORSMiddleware
 from app.models import user, board_member, member_benefit, black_profile
 from app.api.v1 import admin
+from app.api.v1 import hr
+from app.api.v1 import student
+
 
 print("DB URL:", engine.url)
 Base.metadata.create_all(bind=engine)
@@ -52,6 +55,9 @@ app.include_router(otp.router)
 app.include_router(upload.router)
 app.include_router(password_reset.router)
 app.include_router(admin.router)
+app.include_router(hr.router)
+app.include_router(student.router)
+
 
 
 

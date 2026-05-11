@@ -162,3 +162,18 @@ def get_current_admin(
         )
 
     return user
+
+def get_current_hr(current_user: Member = Depends(get_current_user)):
+
+    if current_user.role != "HR":
+        raise HTTPException(403, "HR Access Required")
+
+    return current_user
+
+
+def get_current_student(current_user: Member = Depends(get_current_user)):
+
+    if current_user.role != "STUDENT":
+        raise HTTPException(403, "Student Access Required")
+
+    return current_user

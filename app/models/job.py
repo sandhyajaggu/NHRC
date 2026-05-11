@@ -1,26 +1,21 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime
-from app.db.base import Base
-from datetime import datetime
-
-
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy.sql import func
+#from app.core.database import Base
+from app.db.base_class import Base
 class Job(Base):
-    __tablename__ = "jobs"
+    __tablename__ =  "jobs"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
 
-    membership_id = Column(String)
-
-    posted_by_role = Column(String)   # admin / employee
-
-    job_title = Column(String)
-    company_name = Column(String)
+    title = Column(String, nullable=False)
+    company_name = Column(String, nullable=False)
     department = Column(String)
-
     work_mode = Column(String)
 
     roles_responsibilities = Column(Text)
+    required_skills = Column(Text)
 
-    qualification = Column(String)
+    qualification_required = Column(String)
 
     min_experience = Column(Integer)
     max_experience = Column(Integer)
@@ -28,10 +23,10 @@ class Job(Base):
     min_salary = Column(Integer)
     max_salary = Column(Integer)
 
-    perks = Column(Text)
+    perks_benefits = Column(Text)
 
-    job_location = Column(String)
-    job_locality = Column(String)
+    location = Column(String)
+    locality = Column(String)
 
     openings = Column(Integer)
 
@@ -39,10 +34,14 @@ class Job(Base):
 
     whatsapp_number = Column(String)
 
-    logo = Column(String)
+    logo = Column(String, nullable=True)
 
-    status = Column(String, default="pending")
+    created_by = Column(String)
+    creator_role = Column(String)
 
-    approved_by = Column(String, nullable=True)
+    status = Column(String, default="PENDING")
+    # PENDING / APPROVED / REJECTED
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    is_public = Column(Boolean, default=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

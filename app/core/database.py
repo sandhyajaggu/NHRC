@@ -23,6 +23,7 @@ SessionLocal = sessionmaker(
     autocommit=False
 )
 
+Base = declarative_base()
 
 
 
