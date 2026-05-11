@@ -111,6 +111,7 @@ def create_job(
 
         created_by=admin.membership_id,
         creator_role="ADMIN",
+        
 
         status="APPROVED",
         is_public=True
@@ -122,7 +123,12 @@ def create_job(
 
     return {
         "message": "Admin Job Created Successfully",
-        "job": job
+        "job": {
+            "id": job.id,
+            "title": job.title,
+            "status": job.status,
+            "created_by": job.created_by
+        }
     }
 
 @router.put("/approve/{job_id}")
@@ -136,6 +142,12 @@ def approve_job(
 
     if not job:
         raise HTTPException(404, "Job Not Found")
+    # ADMIN JOBS CANNOT BE APPROVED AGAIN
+    if job.creator_role == "ADMIN":
+        raise HTTPException(
+            status_code=400,
+            detail="Admin Created Jobs Are Already Approved"
+        )
 
     job.status = "APPROVED"
     job.is_public = True
@@ -157,6 +169,7 @@ def reject_job(
 
     if not job:
         raise HTTPException(404, "Job Not Found")
+    
 
     if job.creator_role == "ADMIN":
         raise HTTPException(
