@@ -45,3 +45,8 @@ class Job(Base):
     is_public = Column(Boolean, default=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_by = Column(String, nullable=True)
+    updated_at = Column(DateTime(timezone=True), nullable=True)
+
+    deleted_by = Column(String, nullable=True)
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
