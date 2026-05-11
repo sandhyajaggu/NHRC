@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.schemas.job import JobCreate, JobUpdate
 from app.models.job import Job
-from app.core.security import get_current_hr
+from app.core.security import get_current_employee
 
 router = APIRouter(
     prefix="/hr",
@@ -15,7 +15,7 @@ router = APIRouter(
 def create_hr_job(
     payload: JobCreate,
     db: Session = Depends(get_db),
-    hr = Depends(get_current_hr)
+    hr = Depends(get_current_employee)
 ):
 
     job = Job(
@@ -42,7 +42,7 @@ def update_hr_job(
     job_id: int,
     payload: JobUpdate,
     db: Session = Depends(get_db),
-    hr = Depends(get_current_hr)
+    hr = Depends(get_current_employee)
 ):
 
     job = db.query(Job).filter(

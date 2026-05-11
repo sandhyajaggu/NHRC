@@ -163,10 +163,10 @@ def get_current_admin(
 
     return user
 
-def get_current_hr(current_user: Member = Depends(get_current_user)):
+def get_current_employee(current_user: Member = Depends(get_current_user)):
 
-    if current_user.role != "HR":
-        raise HTTPException(403, "HR Access Required")
+    if current_user.role != "EMPLOYEE":
+        raise HTTPException(403, "Employee Access Required")
 
     return current_user
 
