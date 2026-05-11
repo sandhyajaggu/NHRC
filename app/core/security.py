@@ -163,17 +163,26 @@ def get_current_admin(
 
     return user
 
-def get_current_employee(current_user: Member = Depends(get_current_user)):
+def get_current_employee(
+    current_user: Member = Depends(get_current_user)
+):
 
-    if current_user.role != "EMPLOYEE":
-        raise HTTPException(403, "Employee Access Required")
+    if current_user.role.strip().upper() != "EMPLOYEE":
+        raise HTTPException(
+            status_code=403,
+            detail="Employee Access Required"
+        )
 
     return current_user
 
+def get_current_student(
+    current_user: Member = Depends(get_current_user)
+):
 
-def get_current_student(current_user: Member = Depends(get_current_user)):
-
-    if current_user.role != "STUDENT":
-        raise HTTPException(403, "Student Access Required")
+    if current_user.role.strip().upper() != "STUDENT":
+        raise HTTPException(
+            status_code=403,
+            detail="Student Access Required"
+        )
 
     return current_user
