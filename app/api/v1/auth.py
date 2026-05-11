@@ -185,19 +185,56 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     }
 # ============== admin login ========================
 @router.post("/admin/login")
-def admin_login(payload: LoginRequest, db: Session = Depends(get_db)):
+def admin_login(
+    payload: LoginRequest,
+    db: Session = Depends(get_db)
+):
 
     user = db.query(Member).filter(
-        Member.email == payload.email,
-        Member.role == "admin"
+        Member.email == payload.email
     ).first()
 
-    if not user or not verify_password(payload.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    # =========================
+    # CHECK USER
+    # =========================
+
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid admin credentials"
+        )
+
+    # =========================
+    # CHECK ROLE
+    # =========================
+
+    if user.role.strip().upper() != "ADMIN":
+        raise HTTPException(
+            status_code=403,
+            detail="Admin Access Required"
+        )
+
+    # =========================
+    # CHECK PASSWORD
+    # =========================
+
+    if not verify_password(
+        payload.password,
+        user.password_hash
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid admin credentials"
+        )
+
+    # =========================
+    # CREATE TOKEN
+    # =========================
 
     token = create_access_token({
         "sub": user.email,
-        "role": user.role
+        "role": user.role,
+        "membership_id": user.membership_id
     })
 
     return {

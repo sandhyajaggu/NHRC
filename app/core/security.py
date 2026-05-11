@@ -154,7 +154,7 @@ def get_current_admin(
     user: Member = Depends(get_current_user)
 ):
 
-    if user.role.lower().strip() != "admin":
+    if user.role.lower().strip().upper() != "admin":
 
         raise HTTPException(
             status_code=403,
