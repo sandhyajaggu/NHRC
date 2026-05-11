@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.schemas.job import JobCreate
 from app.models.job import Job
-from app.core.dependencies import get_current_hr
+from app.core.security import get_current_hr
 
 router = APIRouter(
     prefix="/hr/jobs",
