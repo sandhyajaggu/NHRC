@@ -38,7 +38,9 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     # ==============================
     # CHECK EXISTING USER
     # ==============================
-    existing = db.query(Member).filter(Member.email == payload.email).first()
+    existing = db.query(Member).filter(
+        Member.email == payload.email
+    ).first()
 
     if existing:
         raise HTTPException(
@@ -56,7 +58,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         )
 
     # ==============================
-    # BLOCK PUBLIC ADMIN REGISTRATION
+    # BLOCK ADMIN REGISTRATION
     # ==============================
     if payload.candidate_type == "admin":
         raise HTTPException(
@@ -64,10 +66,26 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
             detail="Admin registration is not allowed"
         )
 
-    role = "user"
+    # ==============================
+    # ROLE ASSIGNMENT
+    # ==============================
+    if payload.candidate_type == "employee":
+        role = "EMPLOYEE"
+
+    elif payload.candidate_type == "student":
+        role = "STUDENT"
+
+    elif payload.candidate_type == "representative":
+        role = "REPRESENTATIVE"
+
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid candidate type"
+        )
 
     # ==============================
-    # EMPLOYEE → OTP VALIDATION
+    # EMPLOYEE VALIDATION
     # ==============================
     if payload.candidate_type == "employee":
 
@@ -115,9 +133,9 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         db.commit()
 
     # ==============================
-    # STUDENT / REPRESENTATIVE
+    # STUDENT / REPRESENTATIVE VALIDATION
     # ==============================
-    elif payload.candidate_type in ["student", "representative"]:
+    if payload.candidate_type in ["student", "representative"]:
 
         if not payload.captcha or not payload.captcha_id:
             raise HTTPException(
@@ -134,26 +152,25 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
                 detail="Invalid captcha"
             )
 
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid candidate type"
-        )
-
     # ==============================
-    # CREATE MEMBER
+    # CREATE MEMBERSHIP ID
     # ==============================
     membership_id = generate_membership_id(
         db,
         payload.candidate_type
     )
 
+    # ==============================
+    # CREATE MEMBER
+    # ==============================
     member = Member(
         membership_id=membership_id,
         full_name=payload.full_name,
         email=payload.email,
         password_hash=hash_password(payload.password),
+
         candidate_type=payload.candidate_type,
+
         role=role
     )
 
@@ -226,7 +243,8 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     # token
     token = create_access_token({
         "sub": user.email,
-        "role": user.role
+        "role": user.role,
+        "membership_id": user.membership_id
     })
 
     # ✅ fetch extra details based on candidate type
