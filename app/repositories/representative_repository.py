@@ -13,10 +13,12 @@ class RepresentativeRepository:
 
     @staticmethod
     def create_university(db, data):
+        print("SAVING DATA:", data)
         obj = RepresentativeUniversityDetails(**data)
         db.add(obj)
         db.commit()
         db.refresh(obj)
+        print("SAVED MEMBER ID:", obj.member_id)
         return obj
 
     @staticmethod

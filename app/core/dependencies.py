@@ -1,11 +1,9 @@
-from fastapi import Header, HTTPException, Depends
+'''from fastapi import Header, HTTPException, Depends
 from jose import jwt, JWTError, ExpiredSignatureError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.member import Member
-from app.core.security import SECRET_KEY, ALGORITHM
-from app.core.security import oauth2_scheme
 
 
 
@@ -16,13 +14,14 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.member import Member
-
-SECRET_KEY = "YOUR_SECRET_KEY"
-ALGORITHM = "HS256"
-
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/auth/login"
+from app.core.security import (
+    SECRET_KEY,
+    ALGORITHM,
+    oauth2_scheme
 )
+
+
+
 
 
 def get_current_user(
@@ -72,4 +71,11 @@ def get_current_admin(
             detail="Admins only"
         )
 
-    return user
+    return user'''
+
+
+
+from app.core.security import (
+    get_current_user,
+    get_current_admin
+)
