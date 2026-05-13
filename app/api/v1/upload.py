@@ -8,6 +8,8 @@ from app.models.member import Member
 from app.core.database import get_db
 from fastapi import APIRouter
 
+from app.models.upload import UploadedFile
+
 UPLOAD_DIR = "uploads"
 router = APIRouter(
     prefix="/upload",
@@ -51,4 +53,19 @@ def upload_file(
     return {
         "message": "Uploaded successfully",
         "file_path": file_path
+    }
+
+@router.get("/{membership_id}")
+def get_uploaded_files(
+    membership_id: str,
+    db: Session = Depends(get_db)
+):
+
+    files = db.query(UploadedFile).filter(
+        UploadedFile.membership_id == membership_id
+    ).all()
+
+    return {
+        "membership_id": membership_id,
+        "files": files
     }
