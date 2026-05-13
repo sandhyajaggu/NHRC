@@ -11,7 +11,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.sql import func
 
-from app.core.database import Base
+from app.db.base import Base
 
 
 class JobApplication(Base):
