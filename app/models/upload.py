@@ -6,13 +6,7 @@ class UploadedFile(Base):
     __tablename__ = "uploaded_files"
 
     id = Column(Integer, primary_key=True, index=True)
-
-    membership_id = Column(String)
-
-    file_type = Column(String)
-
-    original_name = Column(String)
-
-    stored_name = Column(String)
-
-    file_path = Column(String)
+    membership_id = Column(String, nullable=False)
+    file_type = Column(String, nullable=False)
+    file_name = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)

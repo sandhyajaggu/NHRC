@@ -5,6 +5,7 @@ from app.db.base import Base
 from app.models.job_application import JobApplication
 from app.models.counter import MembershipCounter
 from app.models.member import Member
+from app.models.upload import UploadedFile
 
 from app.models.employee import Employee
 

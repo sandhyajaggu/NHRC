@@ -1,4 +1,5 @@
 import os
+import shutil
 from sqlalchemy.orm import Session
 
 from fastapi import Depends, File, Form, UploadFile
@@ -18,41 +19,34 @@ router = APIRouter(
 
 
 @router.post("/")
-def upload_file(
+async def upload_file(
     membership_id: str = Form(...),
-    file_type: str = Form(...),   # profile_pic / id_front / id_back
+    file_type: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    member = db.query(Member).filter(
-        Member.membership_id == membership_id
-    ).first()
+    os.makedirs("uploads", exist_ok=True)
 
-    if not member:
-        return {"error": "Member not found"}
+    file_location = f"uploads/{membership_id}_{file_type}_{file.filename}"
 
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    with open(file_location, "wb") as f:
+        shutil.copyfileobj(file.file, f)
 
-    file_path = f"{UPLOAD_DIR}/{membership_id}_{file_type}_{file.filename}"
+    # SAVE TO DATABASE
+    uploaded_file = UploadedFile(
+        membership_id=membership_id,
+        file_type=file_type,
+        file_name=file.filename,
+        file_path=file_location
+    )
 
-    with open(file_path, "wb") as f:
-        f.write(file.file.read())
-
-    # ✅ handle multiple file types
-    if file_type == "profile_pic":
-        member.profile_pic = file_path
-
-    elif file_type == "id_front":
-        member.id_front = file_path
-
-    elif file_type == "id_back":
-        member.id_back = file_path
-
+    db.add(uploaded_file)
     db.commit()
+    db.refresh(uploaded_file)
 
     return {
         "message": "Uploaded successfully",
-        "file_path": file_path
+        "file_path": file_location
     }
 
 @router.get("/{membership_id}")
