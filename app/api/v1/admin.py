@@ -286,17 +286,42 @@ def admin_all_jobs(
         ).count()
 
         response.append({
+
+            # BASIC INFO
             "job_id": job.id,
             "title": job.title,
             "company_name": job.company_name,
+            "department": job.department,
 
+            # JOB DETAILS
+            "work_mode": job.work_mode,
+            "roles_responsibilities": job.roles_responsibilities,
+            "required_skills": job.required_skills,
+            "qualification_required": job.qualification_required,
+
+            # EXPERIENCE
+            "min_experience": job.min_experience,
+            "max_experience": job.max_experience,
+
+            # SALARY
+            "min_salary": job.min_salary,
+            "max_salary": job.max_salary,
+
+            # EXTRA DETAILS
+            "perks_benefits": job.perks_benefits,
+            "location": job.location,
+            "locality": job.locality,
+            "openings": job.openings,
+            "application_deadline": job.application_deadline,
+            "whatsapp_number": job.whatsapp_number,
+
+            # CREATED INFO
             "created_by": job.created_by,
             "creator_role": job.creator_role,
-
             "status": job.status,
-
             "created_at": job.created_at,
 
+            # APPLICATION COUNTS
             "all_responses": total,
             "shortlisted": shortlisted,
             "rejected": rejected
