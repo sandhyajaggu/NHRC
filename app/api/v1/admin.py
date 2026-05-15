@@ -169,7 +169,27 @@ def approve_job(
     db.commit()
 
     return {
-        "message": "Job Approved"
+        "message": "Job Approved",
+        "job": {
+            "id": job.id,
+            "title": job.title,
+            "company_name": job.company_name,
+            "department": job.department,
+            "work_mode": job.work_mode,
+            "roles_responsibilities": job.roles_responsibilities,
+            "required_skills": job.required_skills,
+            "qualification_required": job.qualification_required,
+            "min_experience": job.min_experience,
+            "max_experience": job.max_experience,
+            "min_salary": job.min_salary,
+            "max_salary": job.max_salary,
+            "perks_benefits": job.perks_benefits,
+            "location": job.location,
+            "locality": job.locality,
+            "openings": job.openings,
+            "application_deadline": job.application_deadline,
+            "whatsapp_number": job.whatsapp_number
+        }
     }
 
 @router.put("/reject/{job_id}")
@@ -197,7 +217,27 @@ def reject_job(
     db.commit()
 
     return {
-        "message": "Job Rejected"
+        "message": "Job Rejecred",
+        "job": {
+            "id": job.id,
+            "title": job.title,
+            "company_name": job.company_name,
+            "department": job.department,
+            "work_mode": job.work_mode,
+            "roles_responsibilities": job.roles_responsibilities,
+            "required_skills": job.required_skills,
+            "qualification_required": job.qualification_required,
+            "min_experience": job.min_experience,
+            "max_experience": job.max_experience,
+            "min_salary": job.min_salary,
+            "max_salary": job.max_salary,
+            "perks_benefits": job.perks_benefits,
+            "location": job.location,
+            "locality": job.locality,
+            "openings": job.openings,
+            "application_deadline": job.application_deadline,
+            "whatsapp_number": job.whatsapp_number
+        }
     }
 
 @router.delete("/delete/{job_id}")
@@ -240,8 +280,28 @@ def update_job(
 
     return {
         "message": "Job Updated",
-        "job": job
+        "job": {
+            "id": job.id,
+            "title": job.title,
+            "company_name": job.company_name,
+            "department": job.department,
+            "work_mode": job.work_mode,
+            "roles_responsibilities": job.roles_responsibilities,
+            "required_skills": job.required_skills,
+            "qualification_required": job.qualification_required,
+            "min_experience": job.min_experience,
+            "max_experience": job.max_experience,
+            "min_salary": job.min_salary,
+            "max_salary": job.max_salary,
+            "perks_benefits": job.perks_benefits,
+            "location": job.location,
+            "locality": job.locality,
+            "openings": job.openings,
+            "application_deadline": job.application_deadline,
+            "whatsapp_number": job.whatsapp_number
+        }
     }
+
 
 @router.get("/{job_id}/applications")
 def get_job_applications(
