@@ -122,12 +122,26 @@ def create_job(
     db.refresh(job)
 
     return {
-        "message": "Admin Job Created Successfully",
+        "message": "Job created successfully",
         "job": {
             "id": job.id,
             "title": job.title,
-            "status": job.status,
-            "created_by": job.created_by
+            "company_name": job.company_name,
+            "department": job.department,
+            "work_mode": job.work_mode,
+            "roles_responsibilities": job.roles_responsibilities,
+            "required_skills": job.required_skills,
+            "qualification_required": job.qualification_required,
+            "min_experience": job.min_experience,
+            "max_experience": job.max_experience,
+            "min_salary": job.min_salary,
+            "max_salary": job.max_salary,
+            "perks_benefits": job.perks_benefits,
+            "location": job.location,
+            "locality": job.locality,
+            "openings": job.openings,
+            "application_deadline": job.application_deadline,
+            "whatsapp_number": job.whatsapp_number
         }
     }
 
