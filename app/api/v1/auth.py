@@ -244,9 +244,14 @@ def admin_login(
 # ================= LOGIN =================
 
 @router.post("/login")
-def login(payload: LoginRequest, db: Session = Depends(get_db)):
+def login(
+    payload: LoginRequest,
+    db: Session = Depends(get_db)
+):
 
-    # fetch user
+    # ==============================
+    # FETCH USER
+    # ==============================
     user = db.query(Member).filter(
         Member.email == payload.email
     ).first()
@@ -257,14 +262,21 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
             detail="Invalid credentials"
         )
 
-    # password check
-    if not verify_password(payload.password, user.password_hash):
+    # ==============================
+    # VERIFY PASSWORD
+    # ==============================
+    if not verify_password(
+        payload.password,
+        user.password_hash
+    ):
         raise HTTPException(
             status_code=401,
             detail="Invalid credentials"
         )
 
-    # ✅ approval check
+    # ==============================
+    # APPROVAL CHECK
+    # ==============================
     if user.status == "pending":
         raise HTTPException(
             status_code=403,
@@ -277,63 +289,101 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
             detail="Your account was rejected by admin"
         )
 
-    # token
+    # ==============================
+    # GENERATE TOKEN
+    # ==============================
     token = create_access_token({
         "sub": user.email,
         "role": user.role,
         "membership_id": user.membership_id
     })
 
-    # ✅ fetch extra details based on candidate type
+    # ==============================
+    # FETCH EXTRA DETAILS
+    # ==============================
     details = None
 
+    # EMPLOYEE
     if user.candidate_type == "employee":
+
         from app.models.employee import Employee
 
         details = db.query(Employee).filter(
             Employee.member_id == user.id
         ).first()
 
+    # STUDENT
     elif user.candidate_type == "student":
+
         from app.models.student import (
             StudentUniversityDetails,
             StudentAutonomousDetails
         )
 
-        details = db.query(StudentUniversityDetails).filter(
+        details = db.query(
+            StudentUniversityDetails
+        ).filter(
             StudentUniversityDetails.member_id == user.id
         ).first()
 
         if not details:
-            details = db.query(StudentAutonomousDetails).filter(
+
+            details = db.query(
+                StudentAutonomousDetails
+            ).filter(
                 StudentAutonomousDetails.member_id == user.id
             ).first()
 
+    # REPRESENTATIVE
     elif user.candidate_type == "representative":
+
         from app.models.representative import (
             RepresentativeUniversityDetails,
             RepresentativeAutonomousDetails,
             RepresentativeBothDetails
         )
 
-        details = db.query(RepresentativeUniversityDetails).filter(
+        details = db.query(
+            RepresentativeUniversityDetails
+        ).filter(
             RepresentativeUniversityDetails.member_id == user.id
         ).first()
 
         if not details:
-            details = db.query(RepresentativeAutonomousDetails).filter(
+
+            details = db.query(
+                RepresentativeAutonomousDetails
+            ).filter(
                 RepresentativeAutonomousDetails.member_id == user.id
             ).first()
 
         if not details:
-            details = db.query(RepresentativeBothDetails).filter(
+
+            details = db.query(
+                RepresentativeBothDetails
+            ).filter(
                 RepresentativeBothDetails.member_id == user.id
             ).first()
 
+    # ==============================
+    # RETURN RESPONSE
+    # ==============================
     return {
+        "message": "Login successful",
+
         "access_token": token,
         "token_type": "bearer",
-        "member": user,
+
+        "member": {
+            "id": user.id,
+            "membership_id": user.membership_id,
+            "full_name": user.full_name,
+            "email": user.email,
+            "role": user.role,
+            "candidate_type": user.candidate_type,
+            "status": user.status
+        },
+
         "details": details
     }
 # ================= REFRESH =================

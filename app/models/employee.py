@@ -30,4 +30,4 @@ class Employee(Base):
     email_otp = Column(String)
 
     user_email = Column(String)
-    password = Column(String)
+    password_hash = Column(String)
