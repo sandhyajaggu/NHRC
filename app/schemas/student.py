@@ -16,6 +16,8 @@ class StudentUniversityCreate(BaseModel):
     end_year: int
     location: str
     email: str
+    password: str
+    confirm_password: str
     captcha_answer: int
 
     @validator("end_year")
@@ -36,4 +38,6 @@ class StudentAutonomousCreate(BaseModel):
     end_year: int
     location: str
     email: str
+    password: str
+    confirm_password: str
     captcha_answer: int
