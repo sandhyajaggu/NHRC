@@ -63,7 +63,8 @@ class EmployeeService:
             referral_id=payload.referral_id,
             official_email=payload.official_email,
             user_email=payload.user_email,
-            password=hash_password(payload.password)
+            password_hash=hash_password(payload.password)
+
         )
 
         db.add(employee)
