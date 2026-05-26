@@ -10,72 +10,138 @@ class EmployeeService:
     @staticmethod
     def create_employee(db, payload):
 
-        # Password validation
+        # =========================
+        # PASSWORD VALIDATION
+        # =========================
         if payload.password != payload.confirm_password:
-            raise HTTPException(status_code=400, detail="Passwords do not match")
+            raise HTTPException(
+                status_code=400,
+                detail="Passwords do not match"
+            )
 
-        #  Captcha validation
+        # =========================
+        # CAPTCHA VALIDATION
+        # =========================
         if payload.captcha_answer <= 0:
-            raise HTTPException(status_code=400, detail="Invalid captcha")
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid captcha"
+            )
 
-        #  Get member using membership_id
+        # =========================
+        # GET MEMBER
+        # =========================
         member = db.query(Member).filter(
             Member.membership_id == payload.membership_id
         ).first()
 
         if not member:
-            raise HTTPException(status_code=404, detail="Member not found")
+            raise HTTPException(
+                status_code=404,
+                detail="Member not found"
+            )
 
-        #  OTP check (ONLY verified, not re-validating value)
+        # =========================
+        # OTP VALIDATION
+        # =========================
         otp_record = db.query(OTPVerification).filter(
             OTPVerification.email == payload.official_email
         ).first()
 
         if not otp_record:
-            raise HTTPException(status_code=400, detail="OTP not found")
+            raise HTTPException(
+                status_code=400,
+                detail="OTP not found"
+            )
 
         if not otp_record.is_verified:
-            raise HTTPException(status_code=400, detail="OTP not verified")
+            raise HTTPException(
+                status_code=400,
+                detail="OTP not verified"
+            )
 
         if otp_record.is_used:
-            raise HTTPException(status_code=400, detail="OTP already used")
-        otp_record.is_used = True
+            raise HTTPException(
+                status_code=400,
+                detail="OTP already used"
+            )
 
-        # (optional) expiry check
         from datetime import datetime
-        if datetime.utcnow() > otp_record.expires_at:
-            raise HTTPException(status_code=400, detail="OTP expired")
 
-        #  Create employee
+        if datetime.utcnow() > otp_record.expires_at:
+            raise HTTPException(
+                status_code=400,
+                detail="OTP expired"
+            )
+
+        # =========================
+        # UPDATE MEMBER TABLE
+        # =========================
+        member.email = payload.user_email
+
+        member.password_hash = hash_password(
+            payload.password
+        )
+
+        member.role = "EMPLOYEE"
+
+        member.candidate_type = "employee"
+
+        member.status = "approved"
+
+        # =========================
+        # CREATE EMPLOYEE
+        # =========================
         employee = Employee(
             member_id=member.id,
+
             organization_name=payload.organization_name,
             industry=payload.industry,
             department=payload.department,
             designation=payload.designation,
+
             company_website=payload.company_website,
             working_location=payload.working_location,
             company_strength=payload.company_strength,
+
             employee_id=payload.employee_id,
             experience=payload.experience,
+
             id_card_front=payload.id_card_front,
             id_card_back=payload.id_card_back,
-            referral_id=payload.referral_id,
-            official_email=payload.official_email,
-            user_email=payload.user_email,
-            password_hash=hash_password(payload.password)
 
+            referral_id=payload.referral_id,
+
+            official_email=payload.official_email,
+
+            email_otp=otp_record.otp,
+
+            user_email=payload.user_email,
+
+            password_hash=hash_password(
+                payload.password
+            )
         )
 
         db.add(employee)
 
-        #  mark OTP as used AFTER success
+        # =========================
+        # MARK OTP USED
+        # =========================
         otp_record.is_used = True
 
         db.commit()
+
         db.refresh(employee)
 
         return {
             "message": "Employee created successfully",
-            "employee_id": employee.id
+
+            "membership_id": member.membership_id,
+
+            "employee_id": employee.id,
+
+            "email": member.email,
+
+            "role": member.role
         }
