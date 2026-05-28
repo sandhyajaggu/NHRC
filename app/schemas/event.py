@@ -1,9 +1,8 @@
 from pydantic import BaseModel
 from datetime import date, time
-from typing import Optional
 
 
-class CreateEventSchema(BaseModel):
+class EventCreate(BaseModel):
 
     service_id: int
 
@@ -13,7 +12,7 @@ class CreateEventSchema(BaseModel):
 
     program_category: str
 
-    speaker_name: Optional[str] = None
+    speaker_name: str | None = None
 
     organizer_name: str
 
