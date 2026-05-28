@@ -12,8 +12,9 @@ from app.services.admin_service import AdminService
 from app.schemas.admin import *
 from app.schemas.member import MemberStatusUpdate
 from app.schemas.member import BulkDeleteRequest
-from app.schemas.service_event import CreateEventSchema
+from app.schemas.event import CreateEventSchema
 
+from app.services.download import DownloadService
 from app.services.event_service import EventService
 from app.services.registration_service import (
     RegistrationManagementService
@@ -510,16 +511,7 @@ def approve_registration(
         registration_id
     )
 
-@router.put("/approve/{registration_id}")
-def approve_registration(
-    registration_id: int,
-    db: Session = Depends(get_db)
-):
 
-    return RegistrationManagementService.approve_registration(
-        db,
-        registration_id
-    )
 
 @router.put("/reject/{registration_id}")
 def reject_registration(
@@ -553,6 +545,17 @@ def delete_event(
 ):
 
     return EventService.delete_event(
+        db,
+        event_id
+    )
+@router.get("/events/{event_id}/download")
+def download_event_registrations(
+    event_id: int,
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_admin)
+):
+
+    return DownloadService.download_registrations_excel(
         db,
         event_id
     )

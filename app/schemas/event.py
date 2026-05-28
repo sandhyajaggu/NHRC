@@ -9,15 +9,15 @@ class CreateEventSchema(BaseModel):
 
     title: str
 
-    description: Optional[str] = None
+    description: str
 
-    program_category: Optional[str]
+    program_category: str
 
-    speaker_name: Optional[str]
+    speaker_name: Optional[str] = None
 
-    organizer_name: Optional[str]
+    organizer_name: str
 
-    event_mode: Optional[str]
+    event_mode: str
 
     start_date: date
 
