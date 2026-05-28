@@ -12,7 +12,7 @@ from app.services.admin_service import AdminService
 from app.schemas.admin import *
 from app.schemas.member import MemberStatusUpdate
 from app.schemas.member import BulkDeleteRequest
-from app.schemas.event import CreateEventSchema
+from app.schemas.event import EventCreate
 
 from app.services.download import DownloadService
 from app.services.event_service import EventService
@@ -494,7 +494,7 @@ def reject_candidate(
 
 @router.post("/create")
 def create_event(
-    payload: CreateEventSchema,
+    payload: EventCreate,
     db: Session = Depends(get_db)
 ):
 
