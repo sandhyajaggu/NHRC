@@ -2,7 +2,7 @@ import app.models.board_member
 from fastapi import FastAPI
 from app.db.base import Base
 from app.core.database import engine
-from app.api.v1 import membership, auth, contact,otp,upload,password_reset,admin
+from app.api.v1 import event, membership, auth, contact,otp,upload,password_reset,admin
 from app.api.v1.auth import router as auth_router
 from app.models import user, member_benefit, black_profile
 from fastapi.openapi.utils import get_openapi
@@ -12,7 +12,7 @@ from app.models import user, board_member, member_benefit, black_profile
 from app.api.v1 import admin
 from app.api.v1 import hr
 from app.api.v1 import student
-
+from app.api.v1 import registration
 
 print("DB URL:", engine.url)
 Base.metadata.create_all(bind=engine)
@@ -57,6 +57,8 @@ app.include_router(password_reset.router)
 app.include_router(admin.router)
 app.include_router(hr.router)
 app.include_router(student.router)
+app.include_router(registration.router)
+app.include_router(event.router)
 
 
 

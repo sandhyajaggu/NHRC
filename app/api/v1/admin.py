@@ -12,6 +12,12 @@ from app.services.admin_service import AdminService
 from app.schemas.admin import *
 from app.schemas.member import MemberStatusUpdate
 from app.schemas.member import BulkDeleteRequest
+from app.schemas.service_event import CreateEventSchema
+
+from app.services.event_service import EventService
+from app.services.registration_service import (
+    RegistrationManagementService
+)
 
 
 
@@ -404,7 +410,7 @@ def job_preview(
             status_code=404,
             detail="Job Not Found"
         )
-
+  
     return {
         "job_id": job.id,
         "title": job.title,
@@ -484,3 +490,69 @@ def reject_candidate(
         "application_id": application.id,
         "student_membership_id": application.student_membership_id
     }
+
+@router.post("/create")
+def create_event(
+    payload: CreateEventSchema,
+    db: Session = Depends(get_db)
+):
+
+    return EventService.create_event(db, payload)
+
+@router.put("/approve/{registration_id}")
+def approve_registration(
+    registration_id: int,
+    db: Session = Depends(get_db)
+):
+
+    return RegistrationManagementService.approve_registration(
+        db,
+        registration_id
+    )
+
+@router.put("/approve/{registration_id}")
+def approve_registration(
+    registration_id: int,
+    db: Session = Depends(get_db)
+):
+
+    return RegistrationManagementService.approve_registration(
+        db,
+        registration_id
+    )
+
+@router.put("/reject/{registration_id}")
+def reject_registration(
+    registration_id: int,
+    db: Session = Depends(get_db)
+):
+
+    return RegistrationManagementService.reject_registration(
+        db,
+        registration_id
+    )
+
+@router.put("/forward/{registration_id}")
+def forward_registration(
+    registration_id: int,
+    forwarded_to: str,
+    db: Session = Depends(get_db)
+):
+
+    return RegistrationManagementService.forward_registration(
+        db,
+        registration_id,
+        forwarded_to
+    )
+@router.delete("/{event_id}")
+def delete_event(
+    event_id: int,
+    db: Session = Depends(get_db),
+
+    admin = Depends(get_current_admin)
+):
+
+    return EventService.delete_event(
+        db,
+        event_id
+    )

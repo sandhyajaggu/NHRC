@@ -6,6 +6,9 @@ from app.core.security import get_current_student, get_current_user
 from app.models.job import Job
 from app.models.job_application import JobApplication
 from app.schemas.job_application import ApplyJobSchema
+from app.schemas.registration import RegisterEventSchema
+from app.services.event_service import EventService
+from app.services.registration_service import RegistrationService
 
 router = APIRouter(
     prefix="/student",
@@ -183,3 +186,22 @@ def apply_job(
         "message": "Applied Successfully",
         "application_id": application.id
     }
+@router.get("/trainings")
+def get_training_programs(
+    db: Session = Depends(get_db)
+):
+
+    return EventService.get_training_programs(db)
+@router.get("/events")
+def get_events(
+    db: Session = Depends(get_db)
+):
+
+    return EventService.get_events(db)
+@router.get("/job-fairs")
+def get_job_fairs(
+    db: Session = Depends(get_db)
+):
+
+    return EventService.get_job_fairs(db)
+

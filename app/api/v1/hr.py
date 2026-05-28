@@ -5,6 +5,7 @@ from app.core.database import get_db
 from app.schemas.job import JobCreate, JobUpdate
 from app.models.job import Job
 from app.core.security import get_current_employee
+from app.services.event_service import EventService
 
 router = APIRouter(
     prefix="/hr",
@@ -166,3 +167,21 @@ def delete_hr_job():
         status_code=403,
         detail="HR Does Not Have Delete Permission"
     )
+@router.get("/events")
+def get_events(
+    db: Session = Depends(get_db)
+):
+
+    return EventService.get_all_events(db)
+@router.get("/trainings")
+def get_trainings(
+    db: Session = Depends(get_db)
+):
+
+    return EventService.get_training_programs(db)
+@router.get("/job-fairs")
+def get_job_fairs(
+    db: Session = Depends(get_db)
+):
+
+    return EventService.get_job_fairs(db)
