@@ -1,17 +1,35 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.service_event import ServiceEvent
 from app.schemas.job import JobCreate, JobUpdate
 from app.models.job import Job
-from app.core.security import get_current_employee
+from app.core.security import get_current_employee, get_current_user
 from app.services.event_service import EventService
+from app.services.job_service import JobService
 
 router = APIRouter(
     prefix="/hr",
     tags=["HR"]
 )
+
+@router.get("/dashboard")
+def hr_dashboard(
+    db: Session = Depends(get_db),
+    hr = Depends(get_current_employee)
+):
+
+    jobs = db.query(Job).filter(
+        Job.created_by == hr.membership_id
+    ).all()
+
+    return {
+        "membership_id": hr.membership_id,
+        "total_jobs": len(jobs),
+        "jobs": jobs
+    }
 
 @router.post("/create")
 def create_hr_job(
@@ -159,6 +177,33 @@ def update_hr_job(
         }
     }
 
+@router.get("/my-jobs")
+def get_my_jobs(
+    db: Session = Depends(get_db),
+    hr = Depends(get_current_employee)
+):
+
+    return JobService.get_my_jobs(
+        db,
+        hr.membership_id
+    )
+
+@router.get("/my-jobs/count")
+def get_my_jobs_count(
+    db: Session = Depends(get_db),
+    hr = Depends(get_current_employee)
+):
+
+    count = db.query(
+        func.count(Job.id)
+    ).filter(
+        Job.created_by == hr.membership_id
+    ).scalar()
+
+    return {
+        "membership_id": hr.membership_id,
+        "total_jobs": count
+    }
     
 
 @router.delete("/delete/{job_id}")
