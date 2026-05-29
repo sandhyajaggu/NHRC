@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from datetime import date, time
 
 
@@ -27,3 +28,4 @@ class EventCreate(BaseModel):
     end_time: time
 
     location: str
+    

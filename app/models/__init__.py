@@ -7,3 +7,8 @@ from .otp import OTPVerification
 from .token_blacklist import TokenBlacklist
 from app.models.job import Job
 from app.models.job_application import JobApplication
+from .service import Service
+from .service_event import ServiceEvent
+from .event_registration import EventRegistration
+from .job_fair import JobFair
+from .event_job_role import EventJobRole

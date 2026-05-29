@@ -19,4 +19,11 @@ from app.models.representative import (
     RepresentativeAutonomousDetails,
     RepresentativeBothDetails
 )
+from app.models.service import Service
+from app.models.service_event import ServiceEvent
+from app.models.event_job_role import EventJobRole
+from app.models.event_registration import EventRegistration
+from app.models.job_fair import JobFair
+from app.models.event_job_role import EventJobRole
+
 

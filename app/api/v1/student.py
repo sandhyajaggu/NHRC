@@ -5,8 +5,10 @@ from app.core.database import get_db
 from app.core.security import get_current_student, get_current_user
 from app.models.job import Job
 from app.models.job_application import JobApplication
+from app.models.job_fair import JobFair
+from app.models.service_event import ServiceEvent
 from app.schemas.job_application import ApplyJobSchema
-from app.schemas.registration import RegisterEventSchema
+from app.schemas.registration import RegistrationCreate
 from app.services.event_service import EventService
 from app.services.registration_service import RegistrationService
 
@@ -186,22 +188,17 @@ def apply_job(
         "message": "Applied Successfully",
         "application_id": application.id
     }
-@router.get("/trainings")
-def get_training_programs(
-    db: Session = Depends(get_db)
-):
-
-    return EventService.get_training_programs(db)
 @router.get("/events")
 def get_events(
     db: Session = Depends(get_db)
 ):
 
-    return EventService.get_events(db)
+    return db.query(ServiceEvent).all()
+
+
 @router.get("/job-fairs")
 def get_job_fairs(
     db: Session = Depends(get_db)
 ):
 
-    return EventService.get_job_fairs(db)
-
+    return db.query(JobFair).all()

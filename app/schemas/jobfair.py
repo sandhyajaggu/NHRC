@@ -1,18 +1,22 @@
 from pydantic import BaseModel
-from datetime import date, time
+
+from datetime import date
 
 
+class JobFairCreate(BaseModel):
 
-class CreateJobFairSchema(BaseModel):
+    service_id: int
 
     title: str
 
-    organization_name: str
+    description: str
 
-    date: date
+    organizer_name: str
 
-    start_time: time
+    event_mode: str
 
-    end_time: time
+    start_date: date
+
+    end_date: date
 
     location: str

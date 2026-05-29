@@ -1,29 +1,34 @@
 from fastapi import APIRouter, Depends
+
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 
-from app.schemas.registration import (
-    RegisterEventSchema
-)
+from app.models.event_registration import EventRegistration
 
-from app.services.registration_service import (
-    RegistrationService
-)
+from app.schemas.registration import RegistrationCreate
 
 router = APIRouter(
-    prefix="/register",
+    prefix="/registrations",
     tags=["Registrations"]
 )
 
 
-@router.post("/")
+@router.post("/register")
 def register_event(
-    payload: RegisterEventSchema,
+    payload: RegistrationCreate,
     db: Session = Depends(get_db)
 ):
 
-    return RegistrationService.register(
-        db,
-        payload
+    registration = EventRegistration(
+        member_id=1,
+        event_id=payload.event_id
     )
+
+    db.add(registration)
+
+    db.commit()
+
+    db.refresh(registration)
+
+    return registration

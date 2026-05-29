@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.models.service_event import ServiceEvent
 from app.schemas.job import JobCreate, JobUpdate
 from app.models.job import Job
 from app.core.security import get_current_employee
@@ -172,16 +173,12 @@ def get_events(
     db: Session = Depends(get_db)
 ):
 
-    return EventService.get_all_events(db)
-@router.get("/trainings")
-def get_trainings(
-    db: Session = Depends(get_db)
-):
+    return db.query(ServiceEvent).all()
 
-    return EventService.get_training_programs(db)
+
 @router.get("/job-fairs")
-def get_job_fairs(
+def get_jobs(
     db: Session = Depends(get_db)
 ):
 
-    return EventService.get_job_fairs(db)
+    return db.query(Job).all()

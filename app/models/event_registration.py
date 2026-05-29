@@ -2,29 +2,33 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
-    ForeignKey,
     DateTime,
-    Text
+    ForeignKey
 )
 
-from datetime import datetime
-
-from app.db.base import Base
+from app.core.database import Base
 
 
 class EventRegistration(Base):
+
     __tablename__ = "event_registrations"
 
     id = Column(Integer, primary_key=True, index=True)
 
     event_id = Column(
         Integer,
-        ForeignKey("service_events.id", ondelete="CASCADE")
+        ForeignKey(
+            "service_events.id",
+            ondelete="CASCADE"
+        )
     )
 
     member_id = Column(
         Integer,
-        ForeignKey("members.id", ondelete="CASCADE")
+        ForeignKey(
+            "members.id",
+            ondelete="CASCADE"
+        )
     )
 
     member_type = Column(String)
@@ -51,7 +55,7 @@ class EventRegistration(Base):
 
     resume = Column(String)
 
-    status = Column(String, default="Pending")
+    status = Column(String)
 
     forwarded_to = Column(String)
 
@@ -59,4 +63,4 @@ class EventRegistration(Base):
 
     approved_at = Column(DateTime)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime)

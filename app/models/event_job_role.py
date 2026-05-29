@@ -9,14 +9,17 @@ from app.db.base import Base
 
 
 class EventJobRole(Base):
+
     __tablename__ = "event_job_roles"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    event_id = Column(
+    job_fair_id = Column(
         Integer,
-        ForeignKey("service_events.id", ondelete="CASCADE")
+        ForeignKey("job_fairs.id", ondelete="CASCADE")
     )
+
+    company_name = Column(String)
 
     hiring_type = Column(String)
 

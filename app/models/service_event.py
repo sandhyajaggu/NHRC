@@ -2,21 +2,17 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
-    ForeignKey,
     Date,
     Time,
     DateTime,
-    Text
+    ForeignKey
 )
 
-from sqlalchemy.orm import relationship
-
-from datetime import datetime
-
-from app.db.base import Base
+from app.core.database import Base
 
 
 class ServiceEvent(Base):
+
     __tablename__ = "service_events"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -28,7 +24,7 @@ class ServiceEvent(Base):
 
     title = Column(String, nullable=False)
 
-    description = Column(Text)
+    description = Column(String)
 
     program_category = Column(String)
 
@@ -50,10 +46,8 @@ class ServiceEvent(Base):
 
     banner_image = Column(String)
 
-    status = Column(String, default="Open")
+    status = Column(String)
 
     created_by = Column(Integer)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    service = relationship("Service")
+    created_at = Column(DateTime)
