@@ -230,23 +230,16 @@ def get_job_fairs(
 
     fairs = db.query(JobFair).all()
 
-    result = []
-
-    for fair in fairs:
-
-        companies = db.query(
-            EventJobRole.company_name
-        ).filter(
-            EventJobRole.job_fair_id == fair.id
-        ).distinct().all()
-
-        result.append({
+    return [
+        {
             "id": fair.id,
             "title": fair.title,
-            "location": fair.location,
+            "description": fair.description,
+            "organizer_name": fair.organizer_name,
+            "event_mode": fair.event_mode,
             "start_date": fair.start_date,
             "end_date": fair.end_date,
-            "companies": [c[0] for c in companies]
-        })
-
-    return result
+            "location": fair.location
+        }
+        for fair in fairs
+    ]
