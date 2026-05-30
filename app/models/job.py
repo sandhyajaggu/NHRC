@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.sql import func
 #from app.core.database import Base
-from app.db.base_class import Base
+from app.db.base import Base
 class Job(Base):
     __tablename__ =  "jobs"
 
@@ -37,6 +37,7 @@ class Job(Base):
     logo = Column(String, nullable=True)
 
     created_by = Column(String)
+    
     creator_role = Column(String)
 
     status = Column(String, default="PENDING")

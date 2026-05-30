@@ -8,7 +8,7 @@ from sqlalchemy import (
     ForeignKey
 )
 
-from app.core.database import Base
+from app.db.base import Base
 
 
 class ServiceEvent(Base):

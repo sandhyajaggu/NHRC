@@ -6,7 +6,7 @@ from sqlalchemy import (
     ForeignKey
 )
 
-from app.core.database import Base
+from app.db.base import Base
 
 
 class EventRegistration(Base):
@@ -15,20 +15,14 @@ class EventRegistration(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    event_id = Column(
-        Integer,
-        ForeignKey(
-            "service_events.id",
-            ondelete="CASCADE"
-        )
-    )
-
     member_id = Column(
         Integer,
-        ForeignKey(
-            "members.id",
-            ondelete="CASCADE"
-        )
+        ForeignKey("members.id")
+    )
+
+    event_id = Column(
+        Integer,
+        ForeignKey("service_events.id")
     )
 
     member_type = Column(String)

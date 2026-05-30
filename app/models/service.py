@@ -6,7 +6,7 @@ from sqlalchemy import (
     DateTime
 )
 
-from app.core.database import Base
+from app.db.base import Base
 
 
 class Service(Base):
