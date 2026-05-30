@@ -3,6 +3,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.models.event_job_role import EventJobRole
+from app.models.job_fair import JobFair
 from app.models.service_event import ServiceEvent
 from app.schemas.job import JobCreate, JobUpdate
 from app.models.job import Job
@@ -222,8 +224,29 @@ def get_events(
 
 
 @router.get("/job-fairs")
-def get_jobs(
+def get_job_fairs(
     db: Session = Depends(get_db)
 ):
 
-    return db.query(Job).all()
+    fairs = db.query(JobFair).all()
+
+    result = []
+
+    for fair in fairs:
+
+        companies = db.query(
+            EventJobRole.company_name
+        ).filter(
+            EventJobRole.job_fair_id == fair.id
+        ).distinct().all()
+
+        result.append({
+            "id": fair.id,
+            "title": fair.title,
+            "location": fair.location,
+            "start_date": fair.start_date,
+            "end_date": fair.end_date,
+            "companies": [c[0] for c in companies]
+        })
+
+    return result
