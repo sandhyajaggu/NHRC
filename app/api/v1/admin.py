@@ -3,11 +3,16 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.board_member import BoardMember
+from app.models.event_job_role import EventJobRole
 from app.models.job import Job
 from app.models.job_application import JobApplication
+from app.models.job_fair import JobFair
 from app.models.member import Member
+from app.models.service_event import ServiceEvent
 from app.models.user import User
+from app.schemas.event_job_role import EventJobRoleCreate
 from app.schemas.job import JobCreate, JobUpdate
+from app.schemas.jobfair import JobFairCreate
 from app.services.admin_service import AdminService
 from app.schemas.admin import *
 from app.schemas.member import MemberStatusUpdate
@@ -492,70 +497,84 @@ def reject_candidate(
         "student_membership_id": application.student_membership_id
     }
 
-@router.post("/create")
+@router.post("/events/create")
 def create_event(
     payload: EventCreate,
     db: Session = Depends(get_db)
 ):
+    event = ServiceEvent(**payload.dict())
 
-    return EventService.create_event(db, payload)
+    db.add(event)
+    db.commit()
+    db.refresh(event)
 
-@router.put("/approve/{registration_id}")
-def approve_registration(
-    registration_id: int,
+    return event
+@router.post("/job-fairs/create")
+def create_job_fair(
+    payload: JobFairCreate,
     db: Session = Depends(get_db)
 ):
 
-    return RegistrationManagementService.approve_registration(
-        db,
-        registration_id
-    )
+    job_fair = JobFair(**payload.dict())
+
+    db.add(job_fair)
+
+    db.commit()
+
+    db.refresh(job_fair)
+
+    return job_fair
 
 
-
-@router.put("/reject/{registration_id}")
-def reject_registration(
-    registration_id: int,
+@router.post("/job-fairs/{job_fair_id}/roles")
+def add_job_role(
+    job_fair_id: int,
+    payload: EventJobRoleCreate,
     db: Session = Depends(get_db)
 ):
 
-    return RegistrationManagementService.reject_registration(
-        db,
-        registration_id
+    role = EventJobRole(
+        job_fair_id=job_fair_id,
+        company_name=payload.company_name,
+        hiring_type=payload.hiring_type,
+        job_role=payload.job_role,
+        experience=payload.experience,
+        openings=payload.openings,
+        job_location=payload.job_location,
+        salary_min=payload.salary_min,
+        salary_max=payload.salary_max,
+        education_required=payload.education_required
     )
 
-@router.put("/forward/{registration_id}")
-def forward_registration(
-    registration_id: int,
-    forwarded_to: str,
-    db: Session = Depends(get_db)
-):
+    db.add(role)
 
-    return RegistrationManagementService.forward_registration(
-        db,
-        registration_id,
-        forwarded_to
-    )
-@router.delete("/{event_id}")
+    db.commit()
+
+    db.refresh(role)
+
+    return role
+
+
+@router.delete("/events/{event_id}")
 def delete_event(
     event_id: int,
-    db: Session = Depends(get_db),
-
-    admin = Depends(get_current_admin)
+    db: Session = Depends(get_db)
 ):
 
-    return EventService.delete_event(
-        db,
-        event_id
-    )
-@router.get("/events/{event_id}/download")
-def download_event_registrations(
-    event_id: int,
-    db: Session = Depends(get_db),
-    admin = Depends(get_current_admin)
-):
+    event = db.query(ServiceEvent).filter(
+        ServiceEvent.id == event_id
+    ).first()
 
-    return DownloadService.download_registrations_excel(
-        db,
-        event_id
-    )
+    if not event:
+        raise HTTPException(
+            status_code=404,
+            detail="Event not found"
+        )
+
+    db.delete(event)
+
+    db.commit()
+
+    return {
+        "message": "Event deleted successfully"
+    }
