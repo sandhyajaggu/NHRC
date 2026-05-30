@@ -22,7 +22,14 @@ class EventRegistration(Base):
 
     event_id = Column(
         Integer,
-        ForeignKey("service_events.id")
+        ForeignKey("service_events.id"),
+        nullable=True
+    )
+
+    job_fair_id = Column(
+        Integer,
+        ForeignKey("job_fairs.id"),
+        nullable=True
     )
 
     member_type = Column(String)
