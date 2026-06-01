@@ -2,6 +2,7 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
+    Boolean,
     DateTime,
     ForeignKey
 )
@@ -13,7 +14,7 @@ class EventRegistration(Base):
 
     __tablename__ = "event_registrations"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
 
     member_id = Column(
         Integer,
@@ -42,26 +43,22 @@ class EventRegistration(Base):
 
     location = Column(String)
 
+    iam_a = Column(String)
+
     nhrc_id = Column(String)
 
+    # STUDENT
     college_name = Column(String)
 
     year_of_passout = Column(String)
 
+    # HR
     company_name = Column(String)
 
     company_location = Column(String)
 
-    company_url = Column(String)
-
-    resume = Column(String)
+    receive_updates = Column(Boolean)
 
     status = Column(String)
-
-    forwarded_to = Column(String)
-
-    approved_by = Column(Integer)
-
-    approved_at = Column(DateTime)
 
     created_at = Column(DateTime)

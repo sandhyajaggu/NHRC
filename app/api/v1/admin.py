@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.board_member import BoardMember
 from app.models.event_job_role import EventJobRole
+from app.models.event_registration import EventRegistration
 from app.models.job import Job
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
@@ -525,6 +526,77 @@ def create_job_fair(
 
     return job_fair
 
+@router.get("/registrations")
+def get_all_registrations(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    registrations = db.query(
+        EventRegistration
+    ).all()
+
+    result = []
+
+    for reg in registrations:
+
+        registration_for = None
+
+        registration_name = None
+
+        if reg.event_id:
+
+            event = db.query(ServiceEvent).filter(
+                ServiceEvent.id == reg.event_id
+            ).first()
+
+            registration_for = "EVENT"
+
+            registration_name = event.title if event else None
+
+        elif reg.job_fair_id:
+
+            job_fair = db.query(JobFair).filter(
+                JobFair.id == reg.job_fair_id
+            ).first()
+
+            registration_for = "JOB_FAIR"
+
+            registration_name = (
+                job_fair.title
+                if job_fair else None
+            )
+
+        result.append({
+
+            "registration_id": reg.id,
+
+            "member_id": reg.member_id,
+
+            "member_type": reg.member_type,
+
+            "full_name": reg.full_name,
+
+            "email": reg.email,
+
+            "phone": reg.phone,
+
+            "location": reg.location,
+
+            "registration_type": registration_for,
+
+            "registered_for": registration_name,
+
+            "status": reg.status,
+
+            "created_at": reg.created_at
+        })
+
+    return {
+        "total_registrations": len(result),
+        "registrations": result
+    }
+
 
 @router.post("/job-fairs/{job_fair_id}/roles")
 def add_job_role(
@@ -577,4 +649,87 @@ def delete_event(
 
     return {
         "message": "Event deleted successfully"
+    }
+@router.get("/dashboard")
+def registration_dashboard(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    total = db.query(
+        EventRegistration
+    ).count()
+
+    event_count = db.query(
+        EventRegistration
+    ).filter(
+        EventRegistration.event_id != None
+    ).count()
+
+    job_fair_count = db.query(
+        EventRegistration
+    ).filter(
+        EventRegistration.job_fair_id != None
+    ).count()
+
+    return {
+
+        "total_registrations": total,
+
+        "event_registrations": event_count,
+
+        "job_fair_registrations": job_fair_count
+    }
+@router.get("/student-registrations")
+def get_student_registrations(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    return db.query(EventRegistration).filter(
+        EventRegistration.member_type == "STUDENT"
+    ).all()
+@router.get("/hr-registrations")
+def get_hr_registrations(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    return db.query(EventRegistration).filter(
+        EventRegistration.member_type == "EMPLOYEE"
+    ).all()
+
+@router.get("/event/{event_id}/registrations")
+def get_event_registrations(
+    event_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    registrations = db.query(EventRegistration).filter(
+        EventRegistration.event_id == event_id
+    ).all()
+
+    return {
+        "event_id": event_id,
+        "total_registrations": len(registrations),
+        "registrations": registrations
+    }
+
+
+@router.get("/job-fair/{job_fair_id}/registrations")
+def get_job_fair_registrations(
+    job_fair_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    registrations = db.query(EventRegistration).filter(
+        EventRegistration.job_fair_id == job_fair_id
+    ).all()
+
+    return {
+        "job_fair_id": job_fair_id,
+        "total_registrations": len(registrations),
+        "registrations": registrations
     }

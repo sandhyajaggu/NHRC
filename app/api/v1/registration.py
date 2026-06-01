@@ -1,137 +1,109 @@
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException
-)
-
+from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-
-from app.core.database import get_db
-
+from fastapi import APIRouter
 from app.core.security import get_current_user
-
-from app.models.member import Member
-
-from app.models.service_event import ServiceEvent
-
-from app.models.job_fair import JobFair
-
+from app.db.session import get_db
 from app.models.event_registration import EventRegistration
-
 from app.schemas.registration import RegistrationCreate
-
-
 router = APIRouter(
-    prefix="/registrations",
-    tags=["Registrations"]
+    prefix="/registration",
+    tags=["Registration"]
 )
-
 
 @router.post("/register")
 def register(
     payload: RegistrationCreate,
     db: Session = Depends(get_db),
-    current_user: Member = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
 
-    # ==========================
-    # VALIDATION
-    # ==========================
+    role = current_user.role.upper()
 
-    if not payload.event_id and not payload.job_fair_id:
+    # ==================
+    # STUDENT VALIDATION
+    # ==================
 
-        raise HTTPException(
-            status_code=400,
-            detail="event_id or job_fair_id required"
-        )
+    if role == "STUDENT":
 
-    # ==========================
-    # EVENT REGISTRATION
-    # ==========================
-
-    if payload.event_id:
-
-        event = db.query(ServiceEvent).filter(
-            ServiceEvent.id == payload.event_id
-        ).first()
-
-        if not event:
-
+        if not payload.college_name:
             raise HTTPException(
-                status_code=404,
-                detail="Event not found"
+                status_code=400,
+                detail="college_name required"
             )
 
-        registration = EventRegistration(
+        if not payload.year_of_passout:
+            raise HTTPException(
+                status_code=400,
+                detail="year_of_passout required"
+            )
 
-            member_id=current_user.id,
+    # ==================
+    # HR VALIDATION
+    # ==================
 
-            event_id=event.id,
+    if role == "EMPLOYEE":
 
-            member_type=current_user.role,
-
-            full_name=current_user.full_name,
-
-            email=current_user.email,
-
-            status="PENDING"
-        )
-
-        db.add(registration)
-
-        db.commit()
-
-        db.refresh(registration)
-
-        return {
-            "message": "Successfully registered for Event"
-        }
-
-    # ==========================
-    # JOB FAIR REGISTRATION
-    # ==========================
-
-    if payload.job_fair_id:
-
-        if current_user.role.strip().upper() == "EMPLOYEE":
+        if payload.job_fair_id:
 
             raise HTTPException(
                 status_code=403,
                 detail="HR cannot register for Job Fairs"
             )
 
-        job_fair = db.query(JobFair).filter(
-            JobFair.id == payload.job_fair_id
-        ).first()
-
-        if not job_fair:
-
+        if not payload.company_name:
             raise HTTPException(
-                status_code=404,
-                detail="Job Fair not found"
+                status_code=400,
+                detail="company_name required"
             )
 
-        registration = EventRegistration(
+        if not payload.company_location:
+            raise HTTPException(
+                status_code=400,
+                detail="company_location required"
+            )
 
-            member_id=current_user.id,
+    registration = EventRegistration(
 
-            job_fair_id=job_fair.id,
+        member_id=current_user.id,
 
-            member_type=current_user.role,
+        event_id=payload.event_id,
 
-            full_name=current_user.full_name,
+        job_fair_id=payload.job_fair_id,
 
-            email=current_user.email,
+        member_type=role,
 
-            status="PENDING"
-        )
+        full_name=payload.full_name,
 
-        db.add(registration)
+        email=current_user.email,
 
-        db.commit()
+        phone=payload.phone,
 
-        db.refresh(registration)
+        location=payload.location,
 
-        return {
-            "message": "Successfully registered for Job Fair"
-        }
+        iam_a=payload.iam_a,
+
+        nhrc_id=payload.nhrc_id,
+
+        college_name=payload.college_name,
+
+        year_of_passout=payload.year_of_passout,
+
+        company_name=payload.company_name,
+
+        company_location=payload.company_location,
+
+        receive_updates=payload.receive_updates,
+
+        status="PENDING"
+    )
+
+    db.add(registration)
+
+    db.commit()
+
+    db.refresh(registration)
+
+    return {
+        "message": "Registration Successful",
+        "registration_id": registration.id
+    }
