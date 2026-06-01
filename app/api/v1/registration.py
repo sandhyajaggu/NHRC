@@ -20,8 +20,12 @@ def register(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
+    print("USER ID:", current_user.id)
+    print("EMAIL:", current_user.email)
+    print("ROLE:", current_user.role)
 
     role = current_user.role.strip().upper()
+    print("FINAL ROLE:", role)
 
     # =====================================
     # ONLY STUDENT & EMPLOYEE CAN REGISTER
