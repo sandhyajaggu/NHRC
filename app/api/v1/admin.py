@@ -739,3 +739,50 @@ def get_job_fair_registrations(
         "total_registrations": len(registrations),
         "registrations": registrations
     }
+@router.get("/events")
+def get_all_events(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    events = db.query(ServiceEvent).all()
+
+    return {
+        "total_events": len(events),
+        "events": [
+            {
+                "id": event.id,
+                "title": event.title,
+                "program_category": event.program_category,
+                "organizer_name": event.organizer_name,
+                "event_mode": event.event_mode,
+                "start_date": event.start_date,
+                "end_date": event.end_date,
+                "location": event.location
+            }
+            for event in events
+        ]
+    }
+@router.get("/job-fairs")
+def get_all_job_fairs(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    job_fairs = db.query(JobFair).all()
+
+    return {
+        "total_job_fairs": len(job_fairs),
+        "job_fairs": [
+            {
+                "id": job_fair.id,
+                "title": job_fair.title,
+                "organizer_name": job_fair.organizer_name,
+                "event_mode": job_fair.event_mode,
+                "start_date": job_fair.start_date,
+                "end_date": job_fair.end_date,
+                "location": job_fair.location
+            }
+            for job_fair in job_fairs
+        ]
+    }
