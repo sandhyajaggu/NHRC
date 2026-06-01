@@ -1,12 +1,10 @@
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user
 from app.db.session import get_db
-
 from app.models.event_registration import EventRegistration
 from app.schemas.registration import RegistrationCreate
-
 
 router = APIRouter(
     prefix="/registration",
@@ -20,36 +18,32 @@ def register(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    print("USER ID:", current_user.id)
-    print("EMAIL:", current_user.email)
-    print("ROLE:", current_user.role)
 
     role = current_user.role.strip().upper()
-    print("FINAL ROLE:", role)
 
-    # =====================================
+    # ==================================
     # ONLY STUDENT & EMPLOYEE CAN REGISTER
-    # =====================================
+    # ==================================
 
     if role not in ["STUDENT", "EMPLOYEE"]:
         raise HTTPException(
             status_code=403,
-            detail="Only Students and HR can register"
+            detail="Only HR and Students can register"
         )
 
-    # =====================================
+    # ==================================
     # EVENT OR JOB FAIR REQUIRED
-    # =====================================
+    # ==================================
 
     if not payload.event_id and not payload.job_fair_id:
         raise HTTPException(
             status_code=400,
-            detail="event_id or job_fair_id is required"
+            detail="event_id or job_fair_id required"
         )
 
-    # =====================================
+    # ==================================
     # STUDENT VALIDATION
-    # =====================================
+    # ==================================
 
     if role == "STUDENT":
 
@@ -65,9 +59,9 @@ def register(
                 detail="year_of_passout required"
             )
 
-    # =====================================
+    # ==================================
     # HR VALIDATION
-    # =====================================
+    # ==================================
 
     if role == "EMPLOYEE":
 
@@ -83,38 +77,29 @@ def register(
                 detail="company_location required"
             )
 
-    # =====================================
-    # CREATE REGISTRATION
-    # =====================================
-
     registration = EventRegistration(
 
         member_id=current_user.id,
 
         event_id=payload.event_id,
-
         job_fair_id=payload.job_fair_id,
 
-        member_type=role,   # STUDENT / EMPLOYEE
+        # Save only HR or STUDENT
+        member_type="HR" if role == "EMPLOYEE" else "STUDENT",
 
         full_name=payload.full_name,
-
         email=current_user.email,
 
         phone=payload.phone,
-
         location=payload.location,
 
         iam_a=payload.iam_a,
-
         nhrc_id=payload.nhrc_id,
 
         college_name=payload.college_name,
-
         year_of_passout=payload.year_of_passout,
 
         company_name=payload.company_name,
-
         company_location=payload.company_location,
 
         receive_updates=payload.receive_updates,
@@ -129,7 +114,5 @@ def register(
     return {
         "message": "Registration Successful",
         "registration_id": registration.id,
-        "member_type": registration.member_type,
-        "event_id": registration.event_id,
-        "job_fair_id": registration.job_fair_id
+        "member_type": registration.member_type
     }
