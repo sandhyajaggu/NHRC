@@ -1,14 +1,18 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
-from fastapi import APIRouter
+
 from app.core.security import get_current_user
 from app.db.session import get_db
+
 from app.models.event_registration import EventRegistration
 from app.schemas.registration import RegistrationCreate
+
+
 router = APIRouter(
     prefix="/registration",
     tags=["Registration"]
 )
+
 
 @router.post("/register")
 def register(
@@ -17,11 +21,31 @@ def register(
     current_user=Depends(get_current_user)
 ):
 
-    role = current_user.role.upper()
+    role = current_user.role.strip().upper()
 
-    # ==================
+    # =====================================
+    # ONLY STUDENT & EMPLOYEE CAN REGISTER
+    # =====================================
+
+    if role not in ["STUDENT", "EMPLOYEE"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Only Students and HR can register"
+        )
+
+    # =====================================
+    # EVENT OR JOB FAIR REQUIRED
+    # =====================================
+
+    if not payload.event_id and not payload.job_fair_id:
+        raise HTTPException(
+            status_code=400,
+            detail="event_id or job_fair_id is required"
+        )
+
+    # =====================================
     # STUDENT VALIDATION
-    # ==================
+    # =====================================
 
     if role == "STUDENT":
 
@@ -37,18 +61,11 @@ def register(
                 detail="year_of_passout required"
             )
 
-    # ==================
+    # =====================================
     # HR VALIDATION
-    # ==================
+    # =====================================
 
     if role == "EMPLOYEE":
-
-        if payload.job_fair_id:
-
-            raise HTTPException(
-                status_code=403,
-                detail="HR cannot register for Job Fairs"
-            )
 
         if not payload.company_name:
             raise HTTPException(
@@ -62,6 +79,10 @@ def register(
                 detail="company_location required"
             )
 
+    # =====================================
+    # CREATE REGISTRATION
+    # =====================================
+
     registration = EventRegistration(
 
         member_id=current_user.id,
@@ -70,7 +91,7 @@ def register(
 
         job_fair_id=payload.job_fair_id,
 
-        member_type=role,
+        member_type=role,   # STUDENT / EMPLOYEE
 
         full_name=payload.full_name,
 
@@ -98,12 +119,13 @@ def register(
     )
 
     db.add(registration)
-
     db.commit()
-
     db.refresh(registration)
 
     return {
         "message": "Registration Successful",
-        "registration_id": registration.id
+        "registration_id": registration.id,
+        "member_type": registration.member_type,
+        "event_id": registration.event_id,
+        "job_fair_id": registration.job_fair_id
     }
