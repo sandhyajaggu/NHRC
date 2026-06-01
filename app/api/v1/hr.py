@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.event_job_role import EventJobRole
+from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.service_event import ServiceEvent
 from app.schemas.job import JobCreate, JobUpdate
@@ -243,3 +244,48 @@ def get_job_fairs(
         }
         for fair in fairs
     ]
+@router.get("/jobs/{job_id}/applications")
+def get_job_applications(
+    job_id: int,
+    db: Session = Depends(get_db),
+    hr=Depends(get_current_employee)
+):
+
+    job = db.query(Job).filter(
+        Job.id == job_id
+    ).first()
+
+    if not job:
+        raise HTTPException(
+            status_code=404,
+            detail="Job not found"
+        )
+
+    # Only creator can view
+
+    if job.created_by != hr.membership_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only view your own jobs"
+        )
+
+    # Admin Approved only
+
+    if job.status != "APPROVED":
+        raise HTTPException(
+            status_code=403,
+            detail="Applications available only after admin approval"
+        )
+
+    applications = db.query(
+        JobApplication
+    ).filter(
+        JobApplication.job_id == job_id
+    ).all()
+
+    return {
+        "job_id": job.id,
+        "job_title": job.title,
+        "total_applications": len(applications),
+        "applications": applications
+    }
