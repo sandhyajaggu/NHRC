@@ -686,18 +686,22 @@ def get_student_registrations(
     admin=Depends(get_current_admin)
 ):
 
-    return db.query(EventRegistration).filter(
+    registrations = db.query(EventRegistration).filter(
         EventRegistration.member_type == "STUDENT"
     ).all()
+
+    return registrations
 @router.get("/hr-registrations")
 def get_hr_registrations(
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin)
 ):
 
-    return db.query(EventRegistration).filter(
+    registrations = db.query(EventRegistration).filter(
         EventRegistration.member_type == "EMPLOYEE"
     ).all()
+
+    return registrations
 
 @router.get("/event/{event_id}/registrations")
 def get_event_registrations(
