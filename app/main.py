@@ -14,9 +14,9 @@ from app.api.v1 import hr
 from app.api.v1 import student
 from app.api.v1 import registration
 
-print("DB URL:", engine.url)
+'''print("DB URL:", engine.url)
 Base.metadata.create_all(bind=engine)
-print("Tables:", Base.metadata.tables.keys())
+print("Tables:", Base.metadata.tables.keys())'''
 app = FastAPI(title="NHRC Backend")
 
 def custom_openapi():
