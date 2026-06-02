@@ -1,3 +1,5 @@
+from sqlalchemy import text
+
 import app.models.board_member
 from fastapi import FastAPI
 from app.db.base import Base
@@ -14,11 +16,21 @@ from app.api.v1 import hr
 from app.api.v1 import student
 from app.api.v1 import registration
 
-'''print("DB URL:", engine.url)
-Base.metadata.create_all(bind=engine)
-print("Tables:", Base.metadata.tables.keys())'''
-app = FastAPI(title="NHRC Backend")
+print("DB URL:", engine.url)
 
+with engine.connect() as conn:
+    result = conn.execute(text("SELECT current_database();"))
+    print("DATABASE =", result.scalar())
+
+    result = conn.execute(text("SELECT COUNT(*) FROM jobs;"))
+    print("JOBS COUNT =", result.scalar())
+
+# Create tables
+#Base.metadata.create_all(bind=engine)
+
+print("Tables:", Base.metadata.tables.keys())
+
+app = FastAPI(title="NHRC Backend")
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
