@@ -18,6 +18,7 @@ from app.models.user import User
 from app.schemas.event_job_role import EventJobRoleCreate
 from app.schemas.job import JobCreate, JobUpdate
 from app.schemas.jobfair import JobFairCreate
+from app.schemas.training import TrainingCreate
 from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.services.admin_service import AdminService
 from app.schemas.admin import *
@@ -795,7 +796,7 @@ def get_all_job_fairs(
 @router.post("/training/create")
 def create_training(
 
-    payload: TrainingRegistrationCreate,
+    payload: TrainingCreate,
 
     db: Session = Depends(get_db),
 
@@ -886,7 +887,7 @@ def update_training(
 
     training_id: int,
 
-    payload: TrainingRegistrationCreate,
+    payload: TrainingCreate,
 
     db: Session = Depends(get_db),
 

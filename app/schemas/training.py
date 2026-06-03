@@ -1,17 +1,21 @@
+from pydantic import BaseModel, EmailStr
 from datetime import date, time
 
-from pydantic import BaseModel
-
-
-class CreateTrainingSchema(BaseModel):
-
-    service_id: int
+class TrainingCreate(BaseModel):
 
     title: str
 
-    trainer_name: str
+    short_description: str
 
     training_mode: str
+
+    program_category: str
+
+    capacity: int
+
+    trainer_name: str
+
+    contact_email: EmailStr
 
     start_date: date
 
@@ -22,3 +26,5 @@ class CreateTrainingSchema(BaseModel):
     end_time: time
 
     location: str
+
+    banner_image: str
