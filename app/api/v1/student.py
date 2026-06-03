@@ -9,14 +9,13 @@ from app.models.job import Job
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.service_event import ServiceEvent
-from app.models.training import TrainingProgram
 from app.models.training_registration import TrainingRegistration
 from app.schemas.job_application import ApplyJobSchema
 from app.schemas.registration import RegistrationCreate
 from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.services.event_service import EventService
 from app.services.registration_service import RegistrationService
-
+from app.models.training_program import TrainingProgram
 router = APIRouter(
     prefix="/student",
     tags=["STUDENT"]

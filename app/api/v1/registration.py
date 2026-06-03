@@ -6,11 +6,10 @@ from sqlalchemy.orm import Session
 from app.core.security import get_current_user
 from app.db.session import get_db
 from app.models.event_registration import EventRegistration
-from app.models.training import TrainingProgram
 from app.models.training_registration import TrainingRegistration
 from app.schemas.registration import RegistrationCreate
 from app.schemas.training_registration_create import TrainingRegistrationCreate
-
+from app.models.training_program import TrainingProgram
 router = APIRouter(
     prefix="/registration",
     tags=["Registration"]

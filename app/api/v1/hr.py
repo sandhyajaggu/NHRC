@@ -9,7 +9,7 @@ from app.models.event_job_role import EventJobRole
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.service_event import ServiceEvent
-from app.models.training import TrainingProgram
+from app.models.training_program import TrainingProgram
 from app.models.training_registration import TrainingRegistration
 from app.schemas.job import JobCreate, JobUpdate
 from app.models.job import Job
@@ -17,6 +17,7 @@ from app.core.security import get_current_employee, get_current_user
 from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.services.event_service import EventService
 from app.services.job_service import JobService
+from app.models.training_program import TrainingProgram
 
 router = APIRouter(
     prefix="/hr",
