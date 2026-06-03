@@ -47,6 +47,29 @@ router = APIRouter(
     tags=["Admin"]
 )
 
+@router.get("/admin/db-check")
+def db_check(db: Session = Depends(get_db)):
+    database = db.execute(
+        text("SELECT current_database()")
+    ).scalar()
+
+    return {
+        "database": database
+    }
+
+
+@router.get("/admin/table-check")
+def table_check(db: Session = Depends(get_db)):
+    tables = db.execute(
+        text("""
+        SELECT tablename
+        FROM pg_tables
+        WHERE schemaname='public'
+        """)
+    ).fetchall()
+
+    return [row[0] for row in tables]
+
 # ================= DASHBOARD =================
 @router.get("/dashboard")
 def dashboard(
@@ -335,7 +358,7 @@ def get_job_applications(
 
     return applications
 
-from sqlalchemy import func
+from sqlalchemy import func, text
 from app.models.job_application import JobApplication
 
 @router.get("/all")
