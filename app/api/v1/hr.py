@@ -1,3 +1,5 @@
+import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -7,9 +9,12 @@ from app.models.event_job_role import EventJobRole
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.service_event import ServiceEvent
+from app.models.training import TrainingProgram
+from app.models.training_registration import TrainingRegistration
 from app.schemas.job import JobCreate, JobUpdate
 from app.models.job import Job
 from app.core.security import get_current_employee, get_current_user
+from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.services.event_service import EventService
 from app.services.job_service import JobService
 
@@ -289,3 +294,60 @@ def get_job_applications(
         "total_applications": len(applications),
         "applications": applications
     }
+@router.get("/training-programs")
+def get_training_programs(
+
+    db: Session = Depends(get_db),
+
+    current_user=Depends(get_current_user)
+
+):
+
+    return db.query(
+        TrainingProgram
+    ).filter(
+        TrainingProgram.status == "OPEN"
+    ).all()
+@router.get("/training-program/{training_id}")
+def get_training_program(
+
+    training_id: int,
+
+    db: Session = Depends(get_db),
+
+    current_user=Depends(get_current_user)
+
+):
+
+    training = db.query(
+        TrainingProgram
+    ).filter(
+        TrainingProgram.id == training_id
+    ).first()
+
+    if not training:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Training Program not found"
+        )
+
+    return training
+
+@router.get("/my-training-registrations")
+def my_training_registrations(
+
+    db: Session = Depends(get_db),
+
+    current_user=Depends(get_current_user)
+
+):
+
+    registrations = db.query(
+        TrainingRegistration
+    ).filter(
+        TrainingRegistration.member_id == current_user.id
+    ).all()
+
+    return registrations
+

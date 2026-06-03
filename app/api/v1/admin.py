@@ -1,3 +1,5 @@
+import datetime
+
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
@@ -10,10 +12,13 @@ from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.member import Member
 from app.models.service_event import ServiceEvent
+from app.models.training import TrainingProgram
+from app.models.training_registration import TrainingRegistration
 from app.models.user import User
 from app.schemas.event_job_role import EventJobRoleCreate
 from app.schemas.job import JobCreate, JobUpdate
 from app.schemas.jobfair import JobFairCreate
+from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.services.admin_service import AdminService
 from app.schemas.admin import *
 from app.schemas.member import MemberStatusUpdate
@@ -785,4 +790,270 @@ def get_all_job_fairs(
             }
             for job_fair in job_fairs
         ]
+    }
+
+@router.post("/training/create")
+def create_training(
+
+    payload: TrainingRegistrationCreate,
+
+    db: Session = Depends(get_db),
+
+    admin=Depends(get_current_admin)
+):
+
+    training = TrainingProgram(
+
+        title=payload.title,
+
+        short_description=payload.short_description,
+
+        program_category=payload.program_category,
+
+        training_mode=payload.training_mode,
+
+        trainer_name=payload.trainer_name,
+
+        capacity=payload.capacity,
+
+        contact_email=payload.contact_email,
+
+        banner_image=payload.banner_image,
+
+        start_date=payload.start_date,
+
+        end_date=payload.end_date,
+
+        start_time=payload.start_time,
+
+        end_time=payload.end_time,
+
+        location=payload.location,
+
+        created_by=admin.id,
+
+        created_at=datetime.utcnow(),
+
+        status="OPEN"
+    )
+
+    db.add(training)
+
+    db.commit()
+
+    db.refresh(training)
+
+    return {
+        "message": "Training Program Created",
+        "training_id": training.id
+    }
+@router.get("/training-programs")
+def get_training_programs(
+
+    db: Session = Depends(get_db),
+
+    admin=Depends(get_current_admin)
+):
+
+    return db.query(
+        TrainingProgram
+    ).all()
+@router.get("/training/{training_id}")
+def get_training(
+
+    training_id: int,
+
+    db: Session = Depends(get_db),
+
+    admin=Depends(get_current_admin)
+):
+
+    training = db.query(
+        TrainingProgram
+    ).filter(
+        TrainingProgram.id == training_id
+    ).first()
+
+    if not training:
+        raise HTTPException(
+            status_code=404,
+            detail="Training Program not found"
+        )
+
+    return training
+@router.put("/training/{training_id}")
+def update_training(
+
+    training_id: int,
+
+    payload: TrainingRegistrationCreate,
+
+    db: Session = Depends(get_db),
+
+    admin=Depends(get_current_admin)
+):
+
+    training = db.query(
+        TrainingProgram
+    ).filter(
+        TrainingProgram.id == training_id
+    ).first()
+
+    if not training:
+        raise HTTPException(
+            status_code=404,
+            detail="Training Program not found"
+        )
+
+    training.title = payload.title
+
+    training.short_description = payload.short_description
+
+    training.program_category = payload.program_category
+
+    training.training_mode = payload.training_mode
+
+    training.trainer_name = payload.trainer_name
+
+    training.capacity = payload.capacity
+
+    training.contact_email = payload.contact_email
+
+    training.banner_image = payload.banner_image
+
+    training.start_date = payload.start_date
+
+    training.end_date = payload.end_date
+
+    training.start_time = payload.start_time
+
+    training.end_time = payload.end_time
+
+    training.location = payload.location
+
+    db.commit()
+
+    return {
+        "message": "Training Program Updated"
+    }
+@router.delete("/training/{training_id}")
+def delete_training(
+
+    training_id: int,
+
+    db: Session = Depends(get_db),
+
+    admin=Depends(get_current_admin)
+):
+
+    training = db.query(
+        TrainingProgram
+    ).filter(
+        TrainingProgram.id == training_id
+    ).first()
+
+    if not training:
+        raise HTTPException(
+            status_code=404,
+            detail="Training Program not found"
+        )
+
+    db.delete(training)
+
+    db.commit()
+
+    return {
+        "message": "Training Program Deleted"
+    }
+@router.get("/training-registrations")
+def get_training_registrations(
+
+    db: Session = Depends(get_db),
+
+    admin=Depends(get_current_admin)
+):
+
+    return db.query(
+        TrainingRegistration
+    ).all()
+@router.get("/training/student-registrations")
+def get_student_training_registrations(
+
+    db: Session = Depends(get_db),
+
+    admin=Depends(get_current_admin)
+):
+
+    return db.query(
+        TrainingRegistration
+    ).filter(
+        TrainingRegistration.member_type == "STUDENT"
+    ).all()
+@router.get("/training/hr-registrations")
+def get_hr_training_registrations(
+
+    db: Session = Depends(get_db),
+
+    admin=Depends(get_current_admin)
+):
+
+    return db.query(
+        TrainingRegistration
+    ).filter(
+        TrainingRegistration.member_type.in_(
+            ["EMPLOYEE", "HR"]
+        )
+    ).all()
+@router.get("/training/{training_id}/registrations")
+def get_training_registrations_by_training(
+
+    training_id: int,
+
+    db: Session = Depends(get_db),
+
+    admin=Depends(get_current_admin)
+):
+
+    return db.query(
+        TrainingRegistration
+    ).filter(
+        TrainingRegistration.training_id == training_id
+    ).all()
+@router.get("/training/{training_id}/summary")
+def training_summary(
+
+    training_id: int,
+
+    db: Session = Depends(get_db),
+
+    admin=Depends(get_current_admin)
+):
+
+    total = db.query(
+        TrainingRegistration
+    ).filter(
+        TrainingRegistration.training_id == training_id
+    ).count()
+
+    students = db.query(
+        TrainingRegistration
+    ).filter(
+        TrainingRegistration.training_id == training_id,
+        TrainingRegistration.member_type == "STUDENT"
+    ).count()
+
+    hr_count = db.query(
+        TrainingRegistration
+    ).filter(
+        TrainingRegistration.training_id == training_id,
+        TrainingRegistration.member_type.in_(
+            ["EMPLOYEE", "HR"]
+        )
+    ).count()
+
+    return {
+        "training_id": training_id,
+        "total_registrations": total,
+        "students": students,
+        "hr_registrations": hr_count
     }
