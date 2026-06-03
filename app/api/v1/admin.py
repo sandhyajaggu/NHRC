@@ -845,9 +845,27 @@ def create_training(
     db.refresh(training)
 
     return {
-        "message": "Training Program Created",
-        "training_id": training.id
+    "message": "Training Program Created",
+    "training": {
+        "id": training.id,
+        "title": training.title,
+        "short_description": training.short_description,
+        "program_category": training.program_category,
+        "training_mode": training.training_mode,
+        "trainer_name": training.trainer_name,
+        "capacity": training.capacity,
+        "contact_email": training.contact_email,
+        "banner_image": training.banner_image,
+        "start_date": training.start_date,
+        "end_date": training.end_date,
+        "start_time": training.start_time,
+        "end_time": training.end_time,
+        "location": training.location,
+        "status": training.status,
+        "created_by": training.created_by,
+        "created_at": training.created_at
     }
+}
 @router.get("/training-programs")
 def get_training_programs(
 
