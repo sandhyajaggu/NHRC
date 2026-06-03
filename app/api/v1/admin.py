@@ -12,7 +12,7 @@ from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.member import Member
 from app.models.service_event import ServiceEvent
-from app.models.training import TrainingProgram
+from app.models.training_program import TrainingProgram
 from app.models.training_registration import TrainingRegistration
 from app.models.user import User
 from app.schemas.event_job_role import EventJobRoleCreate

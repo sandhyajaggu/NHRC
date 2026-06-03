@@ -12,3 +12,4 @@ from .service_event import ServiceEvent
 from .event_registration import EventRegistration
 from .job_fair import JobFair
 from .event_job_role import EventJobRole
+from app.models.training_program import TrainingProgram
