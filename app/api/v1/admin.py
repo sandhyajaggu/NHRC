@@ -1100,6 +1100,13 @@ def training_summary(
         "students": students,
         "hr_registrations": hr_count
     }
+@router.get("/board-member-debug")
+def board_member_debug():
+    from app.schemas.board_member import BoardMemberCreate
+
+    return {
+        "fields": list(BoardMemberCreate.model_fields.keys())
+    }
 
 @router.post(
     "/board-members",
