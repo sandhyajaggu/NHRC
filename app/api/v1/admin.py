@@ -15,6 +15,7 @@ from app.models.service_event import ServiceEvent
 from app.models.training_program import TrainingProgram
 from app.models.training_registration import TrainingRegistration
 from app.models.user import User
+from app.schemas.board_member import BoardMemberResponse
 from app.schemas.event_job_role import EventJobRoleCreate
 from app.schemas.job import JobCreate, JobUpdate
 from app.schemas.jobfair import JobFairCreate
@@ -1098,4 +1099,114 @@ def training_summary(
         "total_registrations": total,
         "students": students,
         "hr_registrations": hr_count
+    }
+
+@router.post(
+    "/board-members",
+    response_model=BoardMemberResponse
+)
+def create_board_member(
+    payload: BoardMemberCreate,
+    db: Session = Depends(get_db)
+):
+    board_member = BoardMember(
+        full_name=payload.full_name,
+        professional_title=payload.professional_title,
+        current_position=payload.current_position,
+        photo_url=payload.photo_url,
+        linkedin_url=payload.linkedin_url,
+        twitter_url=payload.twitter_url,
+        facebook_url=payload.facebook_url
+    )
+
+    db.add(board_member)
+    db.commit()
+    db.refresh(board_member)
+
+    return board_member
+
+@router.get(
+    "/board-members",
+    response_model=list[BoardMemberResponse]
+)
+def get_board_members(
+    db: Session = Depends(get_db)
+):
+    return db.query(BoardMember)\
+        .order_by(BoardMember.id.desc())\
+        .all()
+@router.get(
+    "/board-members/{member_id}",
+    response_model=BoardMemberResponse
+)
+def get_board_member(
+    member_id: int,
+    db: Session = Depends(get_db)
+):
+    member = db.query(BoardMember)\
+        .filter(BoardMember.id == member_id)\
+        .first()
+
+    if not member:
+        raise HTTPException(
+            status_code=404,
+            detail="Board Member not found"
+        )
+
+    return member
+
+@router.put(
+    "/board-members/{member_id}",
+    response_model=BoardMemberResponse
+)
+def update_board_member(
+    member_id: int,
+    payload: BoardMemberCreate,
+    db: Session = Depends(get_db)
+):
+    member = db.query(BoardMember)\
+        .filter(BoardMember.id == member_id)\
+        .first()
+
+    if not member:
+        raise HTTPException(
+            status_code=404,
+            detail="Board Member not found"
+        )
+
+    member.full_name = payload.full_name
+    member.professional_title = payload.professional_title
+    member.current_position = payload.current_position
+
+    member.photo_url = payload.photo_url
+
+    member.linkedin_url = payload.linkedin_url
+    member.twitter_url = payload.twitter_url
+    member.facebook_url = payload.facebook_url
+
+    db.commit()
+    db.refresh(member)
+
+    return member
+
+@router.delete("/board-members/{member_id}")
+def delete_board_member(
+    member_id: int,
+    db: Session = Depends(get_db)
+):
+    member = db.query(BoardMember)\
+        .filter(BoardMember.id == member_id)\
+        .first()
+
+    if not member:
+        raise HTTPException(
+            status_code=404,
+            detail="Board Member not found"
+        )
+
+    db.delete(member)
+    db.commit()
+
+    return {
+        "message": "Board Member deleted successfully"
     }

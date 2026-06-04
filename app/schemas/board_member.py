@@ -1,9 +1,20 @@
 from pydantic import BaseModel
-from typing import Optional
+
 
 class BoardMemberCreate(BaseModel):
     full_name: str
-    professional_title: Optional[str]
-    current_position: Optional[str]
-    linkedin_url: Optional[str]
-    twitter_url: Optional[str]
+    professional_title: str
+    current_position: str
+
+    photo_url: str
+
+    linkedin_url: str
+    twitter_url: str
+    facebook_url: str
+
+
+class BoardMemberResponse(BoardMemberCreate):
+    id: int
+
+    class Config:
+        from_attributes = True

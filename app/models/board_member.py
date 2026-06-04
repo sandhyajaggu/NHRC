@@ -1,14 +1,22 @@
-from sqlalchemy import Column, Integer, String
-from app.db.base import Base
+from sqlalchemy import Column, Integer, String, DateTime
+from datetime import datetime
+
+from app.core.database import Base
 
 
 class BoardMember(Base):
     __tablename__ = "board_members"
 
     id = Column(Integer, primary_key=True, index=True)
-    full_name = Column(String, nullable=False)
-    professional_title = Column(String)
-    current_position = Column(String)
-    linkedin_url = Column(String)
-    twitter_url = Column(String)
-    image = Column(String)
+
+    full_name = Column(String(255), nullable=False)
+    professional_title = Column(String(255), nullable=False)
+    current_position = Column(String(255), nullable=False)
+
+    photo_url = Column(String(500), nullable=False)
+
+    linkedin_url = Column(String(500), nullable=False)
+    twitter_url = Column(String(500), nullable=False)
+    facebook_url = Column(String(500), nullable=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
