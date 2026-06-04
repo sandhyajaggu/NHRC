@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
+from unittest.mock import Base
 
-from app.core.database import Base
+from sqlalchemy import Column, DateTime, Integer, String
 
 
 class BoardMember(Base):
