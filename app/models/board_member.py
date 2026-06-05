@@ -1,6 +1,5 @@
 from datetime import datetime
-from unittest.mock import Base
-
+from app.db.base import Base
 from sqlalchemy import Column, DateTime, Integer, String
 
 
