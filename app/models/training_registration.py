@@ -45,6 +45,10 @@ class TrainingRegistration(Base):
 
     company_location = Column(String)
 
-    status = Column(String)
+    #status = Column(String)
+    status = Column(
+    String,
+    nullable=False,
+    default="PENDING")
 
     created_at = Column(DateTime)

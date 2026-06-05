@@ -59,6 +59,10 @@ class EventRegistration(Base):
 
     receive_updates = Column(Boolean)
 
-    status = Column(String)
+    #status = Column(String)
+    status = Column(
+    String,
+    nullable=False,
+    default="PENDING")
 
     created_at = Column(DateTime)

@@ -1,5 +1,6 @@
 
 from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
@@ -1216,3 +1217,297 @@ def delete_board_member(
     return {
         "message": "Board Member deleted successfully"
     }
+
+@router.put(
+    "/event-registrations/{registration_id}/approve"
+)
+def approve_event_registration(
+    registration_id: int,
+    db: Session = Depends(get_db)
+):
+    registration = (
+        db.query(EventRegistration)
+        .filter(
+            EventRegistration.id == registration_id
+        )
+        .first()
+    )
+
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="Registration not found"
+        )
+
+    registration.status = "APPROVED"
+
+    db.commit()
+
+    return {
+        "message": "Applicant approved successfully"
+    }
+@router.put(
+    "/event-registrations/{registration_id}/reject"
+)
+def reject_event_registration(
+    registration_id: int,
+    db: Session = Depends(get_db)
+):
+    registration = (
+        db.query(EventRegistration)
+        .filter(
+            EventRegistration.id == registration_id
+        )
+        .first()
+    )
+
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="Registration not found"
+        )
+
+    registration.status = "REJECTED"
+
+    db.commit()
+
+    return {
+        "message": "Applicant rejected successfully"
+    }
+@router.delete(
+    "/event-registrations/{registration_id}"
+)
+def delete_event_registration(
+    registration_id: int,
+    db: Session = Depends(get_db)
+):
+    registration = (
+        db.query(EventRegistration)
+        .filter(
+            EventRegistration.id == registration_id
+        )
+        .first()
+    )
+
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="Registration not found"
+        )
+
+    db.delete(registration)
+    db.commit()
+
+    return {
+        "message": "Registration deleted successfully"
+    }
+@router.put(
+    "/training-registrations/{registration_id}/approve"
+)
+def approve_training_registration(
+    registration_id: int,
+    db: Session = Depends(get_db)
+):
+    registration = (
+        db.query(TrainingRegistration)
+        .filter(
+            TrainingRegistration.id == registration_id
+        )
+        .first()
+    )
+
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="Registration not found"
+        )
+
+    registration.status = "APPROVED"
+
+    db.commit()
+
+    return {
+        "message": "Training applicant approved"
+    }
+@router.put(
+    "/training-registrations/{registration_id}/reject"
+)
+def reject_training_registration(
+    registration_id: int,
+    db: Session = Depends(get_db)
+):
+    registration = (
+        db.query(TrainingRegistration)
+        .filter(
+            TrainingRegistration.id == registration_id
+        )
+        .first()
+    )
+
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="Registration not found"
+        )
+
+    registration.status = "REJECTED"
+
+    db.commit()
+
+    return {
+        "message": "Training applicant rejected"
+    }
+@router.delete(
+    "/training-registrations/{registration_id}"
+)
+def delete_training_registration(
+    registration_id: int,
+    db: Session = Depends(get_db)
+):
+    registration = (
+        db.query(TrainingRegistration)
+        .filter(
+            TrainingRegistration.id == registration_id
+        )
+        .first()
+    )
+
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="Registration not found"
+        )
+
+    db.delete(registration)
+    db.commit()
+
+    return {
+        "message": "Training registration deleted"
+    }
+'''
+@router.get("/event-registrations/approved")
+def get_approved_event_registrations(
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(EventRegistration)
+        .filter(
+            EventRegistration.status == "APPROVED"
+        )
+        .order_by(EventRegistration.id.desc())
+        .all()
+    )
+@router.get("/event-registrations/rejected")
+def get_rejected_event_registrations(
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(EventRegistration)
+        .filter(
+            EventRegistration.status == "REJECTED"
+        )
+        .order_by(EventRegistration.id.desc())
+        .all()
+    )
+@router.get("/event-registrations/pending")
+def get_pending_event_registrations(
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(EventRegistration)
+        .filter(
+            EventRegistration.status == "PENDING"
+        )
+        .order_by(EventRegistration.id.desc())
+        .all()
+    )
+@router.get("/training-registrations/approved")
+def get_approved_training_registrations(
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(TrainingRegistration)
+        .filter(
+            TrainingRegistration.status == "APPROVED"
+        )
+        .order_by(TrainingRegistration.id.desc())
+        .all()
+    )
+@router.get("/training-registrations/rejected")
+def get_rejected_training_registrations(
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(TrainingRegistration)
+        .filter(
+            TrainingRegistration.status == "REJECTED"
+        )
+        .order_by(TrainingRegistration.id.desc())
+        .all()
+    )
+@router.get("/training-registrations/pending")
+def get_pending_training_registrations(
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(TrainingRegistration)
+        .filter(
+            TrainingRegistration.status == "PENDING"
+        )
+        .order_by(TrainingRegistration.id.desc())
+        .all()
+    )
+'''
+@router.get("/event-registrations")
+def get_event_registrations(
+    status: str | None = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(EventRegistration)
+
+    if status:
+
+        status = status.upper()
+
+        if status not in [
+            "PENDING",
+            "APPROVED",
+            "REJECTED"
+        ]:
+            raise HTTPException(
+                status_code=400,
+                detail="Status must be PENDING, APPROVED or REJECTED"
+            )
+
+        query = query.filter(
+            EventRegistration.status == status
+        )
+
+    return query.order_by(
+        EventRegistration.id.desc()
+    ).all()
+@router.get("/training-registrations")
+def get_training_registrations(
+    status: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(TrainingRegistration)
+
+    if status:
+        status = status.upper()
+
+        if status not in ["PENDING", "APPROVED", "REJECTED"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Status must be PENDING, APPROVED or REJECTED"
+            )
+
+        query = query.filter(
+            TrainingRegistration.status == status
+        )
+
+    registrations = query.order_by(
+        TrainingRegistration.id.desc()
+    ).all()
+
+    return registrations
