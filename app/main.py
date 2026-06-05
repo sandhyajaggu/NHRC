@@ -78,7 +78,9 @@ app.include_router(event.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000",
-                   os.getenv("FRONTEND_URL", "https://nhrclub.com")],  
+                   "http://localhost:3001",
+                   "https://nhrclub.com",
+                   "https://www.nhrclub.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
