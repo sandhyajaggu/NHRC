@@ -1,5 +1,5 @@
 from sqlalchemy import text
-
+import os
 import app.models.board_member
 from fastapi import FastAPI
 from app.db.base import Base
@@ -77,7 +77,8 @@ app.include_router(event.router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # later replace with frontend URL
+    allow_origins=["http://localhost:3000",
+                   os.getenv("FRONTEND_URL", "https://nhrclub.com")],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

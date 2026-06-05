@@ -13,3 +13,4 @@ from .event_registration import EventRegistration
 from .job_fair import JobFair
 from .event_job_role import EventJobRole
 from app.models.training_program import TrainingProgram
+from app.models.board_member import BoardMember
