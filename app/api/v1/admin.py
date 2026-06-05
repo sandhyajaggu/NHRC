@@ -15,14 +15,13 @@ from app.models.service_event import ServiceEvent
 from app.models.training_program import TrainingProgram
 from app.models.training_registration import TrainingRegistration
 from app.models.user import User
-from app.schemas.board_member import BoardMemberResponse
+from app.schemas.board_member import BoardMemberResponse, BoardMemberCreate
 from app.schemas.event_job_role import EventJobRoleCreate
 from app.schemas.job import JobCreate, JobUpdate
 from app.schemas.jobfair import JobFairCreate
 from app.schemas.training import TrainingCreate
 from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.services.admin_service import AdminService
-from app.schemas.admin import *
 from app.schemas.member import MemberStatusUpdate
 from app.schemas.member import BulkDeleteRequest
 from app.schemas.event import EventCreate
