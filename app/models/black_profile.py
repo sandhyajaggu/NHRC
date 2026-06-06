@@ -44,8 +44,11 @@ class BlackProfile(Base):
     remarks = Column(Text)
 
     # Documents
-    document_name = Column(String(255))
-    document_url = Column(String(500))
+    #document_name = Column(String(255))
+    #document_url = Column(String(500))
+    document_name = Column(String(255), nullable=True)
+
+    document_url = Column(String(500), nullable=True)
 
     # HR Details
     hr_name = Column(String(255))

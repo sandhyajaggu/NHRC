@@ -18,7 +18,7 @@ from app.models.service_event import ServiceEvent
 from app.models.training_program import TrainingProgram
 from app.models.training_registration import TrainingRegistration
 from app.models.user import User
-from app.schemas.black_profile import BlackProfileCreate, BlackProfileUpdate
+from app.schemas.black_profile import BlackProfileCreate, BlackProfileResponse, BlackProfileUpdate
 from app.schemas.board_member import BoardMemberResponse, BoardMemberCreate
 from app.schemas.event_job_role import EventJobRoleCreate
 from app.schemas.job import JobCreate, JobUpdate
@@ -1751,3 +1751,85 @@ def get_black_profiles(
         .order_by(BlackProfile.id.desc())
         .all()
     )
+
+import os
+import shutil
+
+from fastapi import UploadFile, File
+
+UPLOAD_DIR = "uploads/black_profiles"
+
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+@router.post(
+    "/black-profiles/{profile_id}/upload-document"
+)
+async def upload_black_profile_document(
+    profile_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    profile = (
+        db.query(BlackProfile)
+        .filter(BlackProfile.id == profile_id)
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Black profile not found"
+        )
+
+    file_name = (
+        f"{profile_id}_{file.filename}"
+    )
+
+    file_path = os.path.join(
+        UPLOAD_DIR,
+        file_name
+    )
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(
+            file.file,
+            buffer
+        )
+
+    profile.document_name = file.filename
+
+    profile.document_url = (
+        f"/uploads/black_profiles/{file_name}"
+    )
+
+    db.commit()
+    db.refresh(profile)
+
+    return {
+        "message": "Document uploaded successfully",
+        "document_url": profile.document_url
+    }
+
+@router.get(
+    "/black-profiles/{profile_id}",
+    response_model=BlackProfileResponse
+)
+def get_black_profile(
+    profile_id: int,
+    db: Session = Depends(get_db)
+):
+    profile = (
+        db.query(BlackProfile)
+        .filter(
+            BlackProfile.id == profile_id
+        )
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Black profile not found"
+        )
+
+    return profile
