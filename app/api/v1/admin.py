@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
+from app.models.black_profile import BlackProfile
 from app.models.board_member import BoardMember
 from app.models.event_job_role import EventJobRole
 from app.models.event_registration import EventRegistration
@@ -17,6 +18,7 @@ from app.models.service_event import ServiceEvent
 from app.models.training_program import TrainingProgram
 from app.models.training_registration import TrainingRegistration
 from app.models.user import User
+from app.schemas.black_profile import BlackProfileCreate, BlackProfileUpdate
 from app.schemas.board_member import BoardMemberResponse, BoardMemberCreate
 from app.schemas.event_job_role import EventJobRoleCreate
 from app.schemas.job import JobCreate, JobUpdate
@@ -1660,3 +1662,92 @@ def delete_multiple_benefits(
     return {
         "message": "Benefits deleted successfully"
     }
+
+@router.post("/admin/black-profiles")
+def create_black_profile(
+    payload: BlackProfileCreate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    profile = BlackProfile(
+        **payload.model_dump(),
+        created_by="ADMIN",
+        created_by_id=current_user.id
+    )
+
+    db.add(profile)
+    db.commit()
+    db.refresh(profile)
+
+    return profile
+
+@router.get("/black-profiles")
+def get_all_black_profiles(
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(BlackProfile)
+        .order_by(BlackProfile.id.desc())
+        .all()
+    )
+
+@router.put("/black-profiles/{profile_id}")
+def update_black_profile(
+    profile_id: int,
+    payload: BlackProfileUpdate,
+    db: Session = Depends(get_db)
+):
+    profile = (
+        db.query(BlackProfile)
+        .filter(BlackProfile.id == profile_id)
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Black profile not found"
+        )
+
+    for key, value in payload.model_dump().items():
+        setattr(profile, key, value)
+
+    db.commit()
+    db.refresh(profile)
+
+    return profile
+
+@router.delete("/black-profiles/{profile_id}")
+def delete_black_profile(
+    profile_id: int,
+    db: Session = Depends(get_db)
+):
+    profile = (
+        db.query(BlackProfile)
+        .filter(BlackProfile.id == profile_id)
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Black profile not found"
+        )
+
+    db.delete(profile)
+    db.commit()
+
+    return {
+        "message": "Black profile deleted successfully"
+    }
+
+@router.get("/black-profiles")
+def get_black_profiles(
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(BlackProfile)
+        .order_by(BlackProfile.id.desc())
+        .all()
+    )

@@ -5,12 +5,14 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.models.black_profile import BlackProfile
 from app.models.event_job_role import EventJobRole
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.service_event import ServiceEvent
 from app.models.training_program import TrainingProgram
 from app.models.training_registration import TrainingRegistration
+from app.schemas.black_profile import BlackProfileCreate, BlackProfileUpdate,BlackProfileResponse
 from app.schemas.job import JobCreate, JobUpdate
 from app.models.job import Job
 from app.core.security import get_current_employee, get_current_user
@@ -352,3 +354,110 @@ def my_training_registrations(
 
     return registrations
 
+@router.post("/hr/black-profiles")
+def create_black_profile(
+    payload: BlackProfileCreate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    profile = BlackProfile(
+        **payload.model_dump(),
+        created_by="HR",
+        created_by_id=current_user.id
+    )
+
+    db.add(profile)
+    db.commit()
+    db.refresh(profile)
+
+    return profile
+
+@router.get("/hr/black-profiles")
+def get_my_black_profiles(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    return (
+        db.query(BlackProfile)
+        .filter(
+            BlackProfile.created_by == "HR",
+            BlackProfile.created_by_id == current_user.id
+        )
+        .order_by(BlackProfile.id.desc())
+        .all()
+    )
+@router.put("/hr/black-profiles/{profile_id}")
+def update_black_profile(
+    profile_id: int,
+    payload: BlackProfileUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    profile = (
+        db.query(BlackProfile)
+        .filter(
+            BlackProfile.id == profile_id,
+            BlackProfile.created_by == "HR",
+            BlackProfile.created_by_id == current_user.id
+        )
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=403,
+            detail="You can update only your own blocked profiles"
+        )
+
+    for key, value in payload.model_dump().items():
+        setattr(profile, key, value)
+
+    db.commit()
+    db.refresh(profile)
+
+    return profile
+
+@router.delete("/hr/black-profiles/{profile_id}")
+def delete_black_profile(
+    profile_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    profile = (
+        db.query(BlackProfile)
+        .filter(
+            BlackProfile.id == profile_id,
+            BlackProfile.created_by == "HR",
+            BlackProfile.created_by_id == current_user.id
+        )
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=403,
+            detail="You can delete only your own blocked profiles"
+        )
+
+    db.delete(profile)
+    db.commit()
+
+    return {
+        "message": "Black profile deleted successfully"
+    }
+@router.get("/hr/black-profiles")
+def get_my_black_profiles(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(BlackProfile)
+        .filter(
+            BlackProfile.created_by == "HR",
+            BlackProfile.created_by_id == current_user.id
+        )
+        .order_by(BlackProfile.id.desc())
+        .all()
+    )
