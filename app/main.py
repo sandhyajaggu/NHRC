@@ -75,6 +75,10 @@ app.include_router(student.router)
 app.include_router(registration.router)
 app.include_router(event.router)
 app.include_router(member_benefits.router)
+from app.api.v1 import black_profile
+
+app.include_router(black_profile.router)
+
 
 
 
