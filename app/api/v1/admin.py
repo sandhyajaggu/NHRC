@@ -12,6 +12,7 @@ from app.models.job import Job
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.member import Member
+from app.models.member_benefit import MemberBenefit
 from app.models.service_event import ServiceEvent
 from app.models.training_program import TrainingProgram
 from app.models.training_registration import TrainingRegistration
@@ -20,6 +21,7 @@ from app.schemas.board_member import BoardMemberResponse, BoardMemberCreate
 from app.schemas.event_job_role import EventJobRoleCreate
 from app.schemas.job import JobCreate, JobUpdate
 from app.schemas.jobfair import JobFairCreate
+from app.schemas.member_benefit import BenefitBulkDelete, BenefitStatusUpdate, MemberBenefitCreate, MemberBenefitResponse, MemberBenefitUpdate
 from app.schemas.training import TrainingCreate
 from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.services.admin_service import AdminService
@@ -1511,3 +1513,150 @@ def get_training_registrations(
     ).all()
 
     return registrations
+
+@router.post(
+    "/member-benefits",
+    response_model=MemberBenefitResponse
+)
+def create_benefit(
+    payload: MemberBenefitCreate,
+    db: Session = Depends(get_db)
+):
+    benefit = MemberBenefit(
+        category=payload.category.upper(),
+        content=payload.content,
+        is_active=True
+    )
+
+    db.add(benefit)
+    db.commit()
+    db.refresh(benefit)
+
+    return benefit
+
+@router.get(
+    "/member-benefits/{category}",
+    response_model=list[MemberBenefitResponse]
+)
+def get_benefits(
+    category: str,
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(MemberBenefit)
+        .filter(
+            MemberBenefit.category == category.upper()
+        )
+        .order_by(
+            MemberBenefit.id.desc()
+        )
+        .all()
+    )
+@router.put(
+    "/member-benefits/{benefit_id}",
+    response_model=MemberBenefitResponse
+)
+def update_benefit(
+    benefit_id: int,
+    payload: MemberBenefitUpdate,
+    db: Session = Depends(get_db)
+):
+    benefit = (
+        db.query(MemberBenefit)
+        .filter(
+            MemberBenefit.id == benefit_id
+        )
+        .first()
+    )
+
+    if not benefit:
+        raise HTTPException(
+            status_code=404,
+            detail="Benefit not found"
+        )
+
+    benefit.content = payload.content
+
+    db.commit()
+    db.refresh(benefit)
+
+    return benefit
+@router.put(
+    "/member-benefits/{benefit_id}/status"
+)
+def update_benefit_status(
+    benefit_id: int,
+    payload: BenefitStatusUpdate,
+    db: Session = Depends(get_db)
+):
+    benefit = (
+        db.query(MemberBenefit)
+        .filter(
+            MemberBenefit.id == benefit_id
+        )
+        .first()
+    )
+
+    if not benefit:
+        raise HTTPException(
+            status_code=404,
+            detail="Benefit not found"
+        )
+
+    benefit.is_active = payload.is_active
+
+    db.commit()
+
+    return {
+        "message": "Status updated successfully"
+    }
+@router.delete(
+    "/member-benefits/{benefit_id}"
+)
+def delete_benefit(
+    benefit_id: int,
+    db: Session = Depends(get_db)
+):
+    benefit = (
+        db.query(MemberBenefit)
+        .filter(
+            MemberBenefit.id == benefit_id
+        )
+        .first()
+    )
+
+    if not benefit:
+        raise HTTPException(
+            status_code=404,
+            detail="Benefit not found"
+        )
+
+    db.delete(benefit)
+    db.commit()
+
+    return {
+        "message": "Benefit deleted successfully"
+    }
+
+@router.delete(
+    "/member-benefits"
+)
+def delete_multiple_benefits(
+    payload: BenefitBulkDelete,
+    db: Session = Depends(get_db)
+):
+    (
+        db.query(MemberBenefit)
+        .filter(
+            MemberBenefit.id.in_(payload.ids)
+        )
+        .delete(
+            synchronize_session=False
+        )
+    )
+
+    db.commit()
+
+    return {
+        "message": "Benefits deleted successfully"
+    }
