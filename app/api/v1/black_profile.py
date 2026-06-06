@@ -131,3 +131,62 @@ async def hr_upload_document(
         "document_name": profile.document_name,
         "document_url": profile.document_url
     }
+@router.get(
+    "/admin/black-profiles/{profile_id}/document"
+)
+def get_black_profile_document(
+    profile_id: int,
+    db: Session = Depends(get_db)
+):
+
+    profile = (
+        db.query(BlackProfile)
+        .filter(
+            BlackProfile.id == profile_id
+        )
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Black profile not found"
+        )
+
+    return {
+        "profile_id": profile.id,
+        "employee_name": profile.employee_name,
+        "document_name": profile.document_name,
+        "document_url": profile.document_url
+    }
+@router.get(
+    "/hr/black-profiles/{profile_id}/document"
+)
+def get_my_black_profile_document(
+    profile_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    profile = (
+        db.query(BlackProfile)
+        .filter(
+            BlackProfile.id == profile_id,
+            BlackProfile.created_by == "HR",
+            BlackProfile.created_by_id == current_user.id
+        )
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=403,
+            detail="You can view only your own black profile documents"
+        )
+
+    return {
+        "profile_id": profile.id,
+        "employee_name": profile.employee_name,
+        "document_name": profile.document_name,
+        "document_url": profile.document_url
+    }
