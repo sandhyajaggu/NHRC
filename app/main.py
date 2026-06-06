@@ -15,6 +15,9 @@ from app.api.v1 import admin
 from app.api.v1 import hr
 from app.api.v1 import student
 from app.api.v1 import registration
+from app.api.v1 import member_benefits
+
+
 
 print("DB URL:", engine.url)
 
@@ -71,6 +74,8 @@ app.include_router(hr.router)
 app.include_router(student.router)
 app.include_router(registration.router)
 app.include_router(event.router)
+app.include_router(member_benefits.router)
+
 
 
 
