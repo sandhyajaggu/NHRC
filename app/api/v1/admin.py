@@ -22,7 +22,7 @@ from app.schemas.black_profile import BlackProfileCreate, BlackProfileResponse, 
 from app.schemas.board_member import BoardMemberResponse, BoardMemberCreate
 from app.schemas.event_job_role import EventJobRoleCreate
 from app.schemas.job import JobCreate, JobUpdate
-from app.schemas.jobfair import JobFairCreate
+from app.schemas.jobfair import JobFairCreate, JobFairResponse
 from app.schemas.member_benefit import BenefitBulkDelete, BenefitStatusUpdate, MemberBenefitCreate, MemberBenefitResponse, MemberBenefitUpdate
 from app.schemas.training import TrainingCreate
 from app.schemas.training_registration_create import TrainingRegistrationCreate
@@ -45,7 +45,8 @@ from app.core.security import (
 )
 
 
-from app.core.dependencies import get_current_admin  
+from app.core.dependencies import get_current_admin
+
 
 router = APIRouter(
     prefix="/admin",
@@ -544,18 +545,31 @@ def create_event(
     db.refresh(event)
 
     return event
-@router.post("/job-fairs/create")
+@router.post(
+    "/admin/job-fairs/create",
+    response_model=JobFairResponse
+)
 def create_job_fair(
-    payload: JobFairCreate,
+    request: JobFairCreate,
     db: Session = Depends(get_db)
 ):
-
-    job_fair = JobFair(**payload.dict())
+    job_fair = JobFair(
+        service_id=request.service_id,
+        title=request.title,
+        description=request.description,
+        organization_name=request.organization_name,
+        contact_number=request.contact_number,
+        contact_email=request.contact_email,
+        banner_image=request.banner_image,
+        start_date=request.start_date,
+        end_date=request.end_date,
+        start_time=request.start_time,
+        end_time=request.end_time,
+        location=request.location
+    )
 
     db.add(job_fair)
-
     db.commit()
-
     db.refresh(job_fair)
 
     return job_fair
@@ -1388,80 +1402,7 @@ def delete_training_registration(
     return {
         "message": "Training registration deleted"
     }
-'''
-@router.get("/event-registrations/approved")
-def get_approved_event_registrations(
-    db: Session = Depends(get_db)
-):
-    return (
-        db.query(EventRegistration)
-        .filter(
-            EventRegistration.status == "APPROVED"
-        )
-        .order_by(EventRegistration.id.desc())
-        .all()
-    )
-@router.get("/event-registrations/rejected")
-def get_rejected_event_registrations(
-    db: Session = Depends(get_db)
-):
-    return (
-        db.query(EventRegistration)
-        .filter(
-            EventRegistration.status == "REJECTED"
-        )
-        .order_by(EventRegistration.id.desc())
-        .all()
-    )
-@router.get("/event-registrations/pending")
-def get_pending_event_registrations(
-    db: Session = Depends(get_db)
-):
-    return (
-        db.query(EventRegistration)
-        .filter(
-            EventRegistration.status == "PENDING"
-        )
-        .order_by(EventRegistration.id.desc())
-        .all()
-    )
-@router.get("/training-registrations/approved")
-def get_approved_training_registrations(
-    db: Session = Depends(get_db)
-):
-    return (
-        db.query(TrainingRegistration)
-        .filter(
-            TrainingRegistration.status == "APPROVED"
-        )
-        .order_by(TrainingRegistration.id.desc())
-        .all()
-    )
-@router.get("/training-registrations/rejected")
-def get_rejected_training_registrations(
-    db: Session = Depends(get_db)
-):
-    return (
-        db.query(TrainingRegistration)
-        .filter(
-            TrainingRegistration.status == "REJECTED"
-        )
-        .order_by(TrainingRegistration.id.desc())
-        .all()
-    )
-@router.get("/training-registrations/pending")
-def get_pending_training_registrations(
-    db: Session = Depends(get_db)
-):
-    return (
-        db.query(TrainingRegistration)
-        .filter(
-            TrainingRegistration.status == "PENDING"
-        )
-        .order_by(TrainingRegistration.id.desc())
-        .all()
-    )
-'''
+
 @router.get("/event-registrations")
 def get_event_registrations(
     status: str | None = None,
@@ -1663,7 +1604,10 @@ def delete_multiple_benefits(
         "message": "Benefits deleted successfully"
     }
 
-@router.post("/admin/black-profiles")
+@router.post(
+    "/admin/black-profiles",
+    response_model=BlackProfileResponse
+)
 def create_black_profile(
     payload: BlackProfileCreate,
     current_user=Depends(get_current_user),
@@ -1671,7 +1615,35 @@ def create_black_profile(
 ):
 
     profile = BlackProfile(
-        **payload.model_dump(),
+        employee_name=payload.employee_name,
+        designation=payload.designation,
+        status=payload.status,
+
+        uan_number=payload.uan_number,
+        employee_id=payload.employee_id,
+        aadhaar_number=payload.aadhaar_number,
+        pan_number=payload.pan_number,
+
+        email=payload.email,
+        phone=payload.phone,
+        location=payload.location,
+
+        department=payload.department,
+        mode_of_work=payload.mode_of_work,
+        reporting_to=payload.reporting_to,
+
+        date_of_joining=payload.date_of_joining,
+        experience=payload.experience,
+
+        remarks=payload.remarks,
+
+        document_name=payload.document_name,
+        document_url=payload.document_url,
+
+        hr_name=payload.hr_name,
+        organisation=payload.organisation,
+        hr_department=payload.hr_department,
+
         created_by="ADMIN",
         created_by_id=current_user.id
     )
@@ -1691,6 +1663,28 @@ def get_all_black_profiles(
         .order_by(BlackProfile.id.desc())
         .all()
     )
+@router.get(
+    "/admin/black-profiles/{profile_id}",
+    response_model=BlackProfileResponse
+)
+def get_black_profile_by_id(
+    profile_id: int,
+    db: Session = Depends(get_db)
+):
+    
+    profile = (
+        db.query(BlackProfile)
+        .filter(BlackProfile.id == profile_id)
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Black profile not found"
+        )
+
+    return profile
 
 @router.put("/black-profiles/{profile_id}")
 def update_black_profile(

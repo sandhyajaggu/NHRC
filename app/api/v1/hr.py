@@ -236,19 +236,31 @@ def get_events(
 def get_job_fairs(
     db: Session = Depends(get_db)
 ):
-
     fairs = db.query(JobFair).all()
 
     return [
         {
             "id": fair.id,
+            "service_id": fair.service_id,
             "title": fair.title,
             "description": fair.description,
-            "organizer_name": fair.organizer_name,
-            "event_mode": fair.event_mode,
+
+            "organization_name": fair.organization_name,
+            "contact_number": fair.contact_number,
+            "contact_email": fair.contact_email,
+
+            "banner_image": fair.banner_image,
+
             "start_date": fair.start_date,
             "end_date": fair.end_date,
-            "location": fair.location
+
+            "start_time": fair.start_time,
+            "end_time": fair.end_time,
+
+            "location": fair.location,
+
+            "created_at": fair.created_at,
+            "updated_at": fair.updated_at
         }
         for fair in fairs
     ]
@@ -354,7 +366,10 @@ def my_training_registrations(
 
     return registrations
 
-@router.post("/hr/black-profiles")
+@router.post(
+    "/hr/black-profiles",
+    response_model=BlackProfileResponse
+)
 def create_black_profile(
     payload: BlackProfileCreate,
     current_user=Depends(get_current_user),
@@ -362,7 +377,35 @@ def create_black_profile(
 ):
 
     profile = BlackProfile(
-        **payload.model_dump(),
+        employee_name=payload.employee_name,
+        designation=payload.designation,
+        status=payload.status,
+
+        uan_number=payload.uan_number,
+        employee_id=payload.employee_id,
+        aadhaar_number=payload.aadhaar_number,
+        pan_number=payload.pan_number,
+
+        email=payload.email,
+        phone=payload.phone,
+        location=payload.location,
+
+        department=payload.department,
+        mode_of_work=payload.mode_of_work,
+        reporting_to=payload.reporting_to,
+
+        date_of_joining=payload.date_of_joining,
+        experience=payload.experience,
+
+        remarks=payload.remarks,
+
+        document_name=payload.document_name,
+        document_url=payload.document_url,
+
+        hr_name=payload.hr_name,
+        organisation=payload.organisation,
+        hr_department=payload.hr_department,
+
         created_by="HR",
         created_by_id=current_user.id
     )
@@ -388,6 +431,34 @@ def get_my_black_profiles(
         .order_by(BlackProfile.id.desc())
         .all()
     )
+
+@router.get(
+    "/hr/black-profiles/{profile_id}",
+    response_model=BlackProfileResponse
+)
+def get_my_black_profile_by_id(
+    profile_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    profile = (
+        db.query(BlackProfile)
+        .filter(
+            BlackProfile.id == profile_id,
+            BlackProfile.created_by == "HR",
+            BlackProfile.created_by_id == current_user.id
+        )
+        .first()
+    )
+
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Black profile not found or access denied"
+        )
+
+    return profile
 @router.put("/hr/black-profiles/{profile_id}")
 def update_black_profile(
     profile_id: int,

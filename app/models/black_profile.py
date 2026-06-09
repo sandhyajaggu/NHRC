@@ -23,7 +23,7 @@ class BlackProfile(Base):
     status = Column(String(50))
 
     # Identifiers
-    uid_number = Column(String(100))
+    uan_number = Column(String(100))
     employee_id = Column(String(100))
     aadhaar_number = Column(String(50))
     pan_number = Column(String(50))
@@ -43,9 +43,7 @@ class BlackProfile(Base):
     # Remarks
     remarks = Column(Text)
 
-    # Documents
-    #document_name = Column(String(255))
-    #document_url = Column(String(500))
+    
     document_name = Column(String(255), nullable=True)
 
     document_url = Column(String(500), nullable=True)

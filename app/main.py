@@ -18,6 +18,8 @@ from app.api.v1 import registration
 from app.api.v1 import member_benefits
 from app.api.v1 import talent_publication
 from app.api.v1 import black_profile
+from fastapi.staticfiles import StaticFiles
+
 
 
 
@@ -83,7 +85,16 @@ app.include_router(member_benefits.router)
 app.include_router(black_profile.router)
 
 app.include_router(talent_publication.router)
+from fastapi.staticfiles import StaticFiles
 
+app.mount(
+    "/uploads",
+    StaticFiles(directory="uploads"),
+    name="uploads"
+)
+from app.api.v1 import job_fair_upload
+
+app.include_router(job_fair_upload.router)
 
 
 

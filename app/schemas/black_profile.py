@@ -10,7 +10,7 @@ class BlackProfileCreate(BaseModel):
     designation: str
     status: str
 
-    uid_number: str
+    uan_number: str
     employee_id: str
     aadhaar_number: str
     pan_number: str
@@ -29,18 +29,18 @@ class BlackProfileCreate(BaseModel):
     remarks: str
 
     document_name: str
+    document_url: str
 
     hr_name: str
     organisation: str
     hr_department: str
-
 class BlackProfileUpdate(BaseModel):
 
     employee_name: Optional[str] = None
     designation: Optional[str] = None
     status: Optional[str] = None
 
-    uid_number: Optional[str] = None
+    uan_number: Optional[str] = None
     employee_id: Optional[str] = None
     aadhaar_number: Optional[str] = None
     pan_number: Optional[str] = None
@@ -79,7 +79,7 @@ class BlackProfileResponse(BaseModel):
     status: str
 
     # Identifiers
-    uid_number: str
+    uan_number: str
     employee_id: str
     aadhaar_number: str
     pan_number: str
@@ -115,3 +115,13 @@ class BlackProfileResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+from pydantic import BaseModel
+from typing import Optional
+
+
+class BlackProfileDocumentResponse(BaseModel):
+    profile_id: int
+    employee_name: str
+    document_name: Optional[str] = None
+    document_url: Optional[str] = None

@@ -16,7 +16,7 @@ class EventJobRole(Base):
 
     job_fair_id = Column(
         Integer,
-        ForeignKey("job_fairs.id", ondelete="CASCADE")
+        ForeignKey("job_fairs.id")
     )
 
     company_name = Column(String)

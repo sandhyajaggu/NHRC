@@ -1,16 +1,6 @@
-# app/models/talent_publication.py
-
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Boolean,
-    DateTime
-)
-from sqlalchemy.sql import func
-
-from app.db.base import Base
-
+from app.core.database import Base
+from sqlalchemy import Column, Integer, String, Text, DateTime
+from datetime import datetime
 
 class TalentPublication(Base):
     __tablename__ = "talent_publications"
@@ -19,21 +9,18 @@ class TalentPublication(Base):
 
     title = Column(String(255), nullable=False)
 
-    cover_image = Column(String(500), nullable=False)
+    banner_image_1 = Column(Text)
+    banner_image_2 = Column(Text)
+    banner_image_3 = Column(Text)
+    banner_image_4 = Column(Text)
 
-    pdf_file = Column(String(500), nullable=False)
+    document_1 = Column(Text)
+    document_2 = Column(Text)
+    document_3 = Column(Text)
+    document_4 = Column(Text)
+
+    youtube_url = Column(Text)
 
     display_order = Column(Integer, default=1)
 
-    is_active = Column(Boolean, default=True)
-
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now()
-    )
-
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now()
-    )
+    created_at = Column(DateTime, default=datetime.utcnow)

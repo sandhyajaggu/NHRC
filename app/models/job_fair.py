@@ -1,31 +1,39 @@
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Date
-)
+# app/models/job_fair.py
+
+from sqlalchemy import Column, Integer, String, Date, DateTime
+from sqlalchemy.sql import func
 
 from app.db.base import Base
 
 
 class JobFair(Base):
-
     __tablename__ = "job_fairs"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    service_id = Column(Integer)
+    service_id = Column(Integer, nullable=False)
 
-    title = Column(String)
+    title = Column(String(255), nullable=False)
+    description = Column(String, nullable=False)
 
-    description = Column(String)
+    organization_name = Column(String(255), nullable=False)
 
-    organizer_name = Column(String)
+    contact_number = Column(String(20), nullable=False)
+    contact_email = Column(String(255), nullable=False)
 
-    event_mode = Column(String)
+    banner_image = Column(String(500), nullable=False)
 
-    start_date = Column(Date)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=False)
 
-    end_date = Column(Date)
+    start_time = Column(String(20), nullable=False)
+    end_time = Column(String(20), nullable=False)
 
-    location = Column(String)
+    location = Column(String(500), nullable=False)
+
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(
+        DateTime,
+        server_default=func.now(),
+        onupdate=func.now()
+    )
