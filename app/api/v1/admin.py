@@ -811,29 +811,28 @@ def get_all_events(
             for event in events
         ]
     }
-@router.get("/job-fairs")
-def get_all_job_fairs(
-    db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
-):
+@router.get("/admin/job-fairs")
+def get_all_job_fairs(db: Session = Depends(get_db)):
+    fairs = db.query(JobFair).all()
 
-    job_fairs = db.query(JobFair).all()
-
-    return {
-        "total_job_fairs": len(job_fairs),
-        "job_fairs": [
-            {
-                "id": job_fair.id,
-                "title": job_fair.title,
-                "organizer_name": job_fair.organizer_name,
-                "event_mode": job_fair.event_mode,
-                "start_date": job_fair.start_date,
-                "end_date": job_fair.end_date,
-                "location": job_fair.location
-            }
-            for job_fair in job_fairs
-        ]
-    }
+    return [
+        {
+            "id": fair.id,
+            "service_id": fair.service_id,
+            "title": fair.title,
+            "description": fair.description,
+            "organization_name": fair.organization_name,
+            "contact_number": fair.contact_number,
+            "contact_email": fair.contact_email,
+            "banner_image": fair.banner_image,
+            "start_date": fair.start_date,
+            "end_date": fair.end_date,
+            "start_time": fair.start_time,
+            "end_time": fair.end_time,
+            "location": fair.location
+        }
+        for fair in fairs
+    ]
 
 @router.post("/training/create")
 def create_training(
