@@ -839,6 +839,105 @@ def get_all_job_fairs(db: Session = Depends(get_db)):
         }
         for fair in fairs
     ]
+@router.get("/admin/job-fairs/registrations")
+def get_all_job_fair_registrations(
+    db: Session = Depends(get_db)
+):
+
+    student_registrations = (
+        db.query(StudentJobFairRegistration)
+        .all()
+    )
+
+    hr_registrations = (
+        db.query(HRJobFairRegistration)
+        .all()
+    )
+
+    students = []
+
+    for student in student_registrations:
+
+        job_fair = (
+            db.query(JobFair)
+            .filter(JobFair.id == student.job_fair_id)
+            .first()
+        )
+
+        students.append({
+            "registration_id": student.id,
+            "job_fair_id": student.job_fair_id,
+            "job_fair_title": job_fair.title if job_fair else None,
+
+            "full_name": student.full_name,
+            "email": student.email,
+            "phone": student.phone,
+            "location": student.location,
+            "iam_a": student.iam_a,
+            "nhrc_id": student.nhrc_id,
+
+            "college_name": student.college_name,
+            "year_of_passout": student.year_of_passout,
+            "department": student.department,
+            "preferred_job_role": student.preferred_job_role,
+            "technical_skills": student.technical_skills,
+
+            "receive_updates": student.receive_updates,
+            "created_at": student.created_at
+        })
+
+    hrs = []
+
+    for hr in hr_registrations:
+
+        job_fair = (
+            db.query(JobFair)
+            .filter(JobFair.id == hr.job_fair_id)
+            .first()
+        )
+
+        roles = (
+            db.query(HRJobFairRole)
+            .filter(HRJobFairRole.registration_id == hr.id)
+            .all()
+        )
+
+        hrs.append({
+            "registration_id": hr.id,
+            "job_fair_id": hr.job_fair_id,
+            "job_fair_title": job_fair.title if job_fair else None,
+
+            "company_name": hr.company_name,
+            "company_url": hr.company_url,
+
+            "full_name": hr.full_name,
+            "email": hr.email,
+            "phone": hr.phone,
+            "nhrc_id": hr.nhrc_id,
+
+            "receive_updates": hr.receive_updates,
+
+            "roles": [
+                {
+                    "hiring_type": role.hiring_type,
+                    "job_role": role.job_role,
+                    "experience": role.experience,
+                    "no_of_openings": role.no_of_openings,
+                    "salary_min": role.salary_min,
+                    "salary_max": role.salary_max,
+                    "job_location": role.job_location,
+                    "education_required": role.education_required
+                }
+                for role in roles
+            ],
+
+            "created_at": hr.created_at
+        })
+
+    return {
+        "student_registrations": students,
+        "hr_registrations": hrs
+    }
 @router.get(
     "/admin/job-fairs/{job_fair_id}",
     response_model=JobFairResponse
@@ -863,53 +962,7 @@ def get_job_fair_by_id(
 
 
 
-@router.get("/admin/job-fairs/registrations")
-def get_all_job_fair_registrations(
-    db: Session = Depends(get_db)
-):
 
-    student_registrations = (
-        db.query(StudentJobFairRegistration)
-        .all()
-    )
-
-    hr_registrations = (
-        db.query(HRJobFairRegistration)
-        .all()
-    )
-
-    hr_data = []
-
-    for hr in hr_registrations:
-
-        roles = (
-            db.query(HRJobFairRole)
-            .filter(
-                HRJobFairRole.registration_id == hr.id
-            )
-            .all()
-        )
-
-        hr_data.append({
-            "id": hr.id,
-            "job_fair_id": hr.job_fair_id,
-            "company_name": hr.company_name,
-            "company_url": hr.company_url,
-            "full_name": hr.full_name,
-            "email": hr.email,
-            "phone": hr.phone,
-            "nhrc_id": hr.nhrc_id,
-            "receive_updates": hr.receive_updates,
-            "created_at": hr.created_at,
-            "roles": roles
-        })
-
-    return {
-        "total_students": len(student_registrations),
-        "total_companies": len(hr_registrations),
-        "student_registrations": student_registrations,
-        "hr_registrations": hr_data
-    }
 @router.put(
     "/admin/job-fairs/{job_fair_id}",
     response_model=JobFairResponse
