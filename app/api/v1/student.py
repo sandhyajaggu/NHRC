@@ -9,8 +9,11 @@ from app.models.job import Job
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.service_event import ServiceEvent
+from app.models.student_job_fair_registration import StudentJobFairRegistration
 from app.models.training_registration import TrainingRegistration
 from app.schemas.job_application import ApplyJobSchema
+from app.schemas.job_fair_registration import StudentJobFairRegistrationCreate, StudentJobFairRegistrationResponse
+from app.schemas.jobfair import JobFairResponse
 from app.schemas.registration import RegistrationCreate
 from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.services.event_service import EventService
@@ -220,6 +223,28 @@ def get_training_programs(
     ).filter(
         TrainingProgram.status == "OPEN"
     ).all()
+
+@router.get(
+    "/job-fairs/{job_fair_id}",
+    response_model=JobFairResponse
+)
+def get_job_fair_by_id(
+    job_fair_id: int,
+    db: Session = Depends(get_db)
+):
+    job_fair = (
+        db.query(JobFair)
+        .filter(JobFair.id == job_fair_id)
+        .first()
+    )
+
+    if not job_fair:
+        raise HTTPException(
+            status_code=404,
+            detail="Job Fair not found"
+        )
+
+    return job_fair
 @router.get("/training-program/{training_id}")
 def get_training_program(
 
@@ -262,4 +287,79 @@ def my_training_registrations(
     ).all()
 
     return registrations
+
+from app.models.job_fair import JobFair
+
+
+@router.post(
+    "/job-fairs/student/register",
+    response_model=StudentJobFairRegistrationResponse
+)
+def register_student_for_job_fair(
+    payload: StudentJobFairRegistrationCreate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    job_fair = (
+        db.query(JobFair)
+        .filter(JobFair.id == payload.job_fair_id)
+        .first()
+    )
+
+    if not job_fair:
+        raise HTTPException(
+            status_code=404,
+            detail="Job Fair not found"
+        )
+
+    registration = StudentJobFairRegistration(
+        **payload.model_dump()
+    )
+
+    db.add(registration)
+    db.commit()
+    db.refresh(registration)
+
+    return registration
+
+@router.get("/student/job-fairs/my-registrations")
+def get_my_job_fair_registrations(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    registrations = (
+        db.query(StudentJobFairRegistration)
+        .filter(
+            StudentJobFairRegistration.email == current_user.email
+        )
+        .all()
+    )
+
+    result = []
+
+    for reg in registrations:
+
+        job_fair = (
+            db.query(JobFair)
+            .filter(
+                JobFair.id == reg.job_fair_id
+            )
+            .first()
+        )
+
+        if job_fair:
+            result.append({
+                "registration_id": reg.id,
+                "job_fair_id": job_fair.id,
+                "title": job_fair.title,
+                "organization_name": job_fair.organization_name,
+                "start_date": job_fair.start_date,
+                "end_date": job_fair.end_date,
+                "location": job_fair.location,
+                "registered_on": reg.created_at
+            })
+
+    return result
 

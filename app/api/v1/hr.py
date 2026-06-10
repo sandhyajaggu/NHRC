@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.black_profile import BlackProfile
 from app.models.event_job_role import EventJobRole
+from app.models.hr_job_fair_registration import HRJobFairRegistration
+from app.models.hr_job_fair_role import HRJobFairRole
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.service_event import ServiceEvent
@@ -16,6 +18,8 @@ from app.schemas.black_profile import BlackProfileCreate, BlackProfileUpdate,Bla
 from app.schemas.job import JobCreate, JobUpdate
 from app.models.job import Job
 from app.core.security import get_current_employee, get_current_user
+from app.schemas.job_fair_registration import HRJobFairRegistrationCreate, HRJobFairRegistrationResponse
+from app.schemas.jobfair import JobFairResponse
 from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.services.event_service import EventService
 from app.services.job_service import JobService
@@ -264,6 +268,28 @@ def get_job_fairs(
         }
         for fair in fairs
     ]
+
+@router.get(
+    "/job-fairs/{job_fair_id}",
+    response_model=JobFairResponse
+)
+def get_job_fair_by_id(
+    job_fair_id: int,
+    db: Session = Depends(get_db)
+):
+    job_fair = (
+        db.query(JobFair)
+        .filter(JobFair.id == job_fair_id)
+        .first()
+    )
+
+    if not job_fair:
+        raise HTTPException(
+            status_code=404,
+            detail="Job Fair not found"
+        )
+
+    return job_fair
 @router.get("/jobs/{job_id}/applications")
 def get_job_applications(
     job_id: int,
@@ -532,3 +558,111 @@ def get_my_black_profiles(
         .order_by(BlackProfile.id.desc())
         .all()
     )
+
+from app.models.job_fair import JobFair
+
+
+@router.post(
+    "/job-fairs/hr/register",
+    response_model=HRJobFairRegistrationResponse
+)
+def register_hr_for_job_fair(
+    payload: HRJobFairRegistrationCreate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    job_fair = (
+        db.query(JobFair)
+        .filter(JobFair.id == payload.job_fair_id)
+        .first()
+    )
+
+    if not job_fair:
+        raise HTTPException(
+            status_code=404,
+            detail="Job Fair not found"
+        )
+
+    registration = HRJobFairRegistration(
+        job_fair_id=payload.job_fair_id,
+        company_name=payload.company_name,
+        company_url=payload.company_url,
+        full_name=payload.full_name,
+        email=payload.email,
+        phone=payload.phone,
+        nhrc_id=payload.nhrc_id,
+        receive_updates=payload.receive_updates
+    )
+
+    db.add(registration)
+    db.flush()
+
+    for role in payload.roles:
+        db.add(
+            HRJobFairRole(
+                registration_id=registration.id,
+                hiring_type=role.hiring_type,
+                job_role=role.job_role,
+                experience=role.experience,
+                no_of_openings=role.no_of_openings,
+                salary_min=role.salary_min,
+                salary_max=role.salary_max,
+                job_location=role.job_location,
+                education_required=role.education_required
+            )
+        )
+
+    db.commit()
+    db.refresh(registration)
+
+    return registration
+
+@router.get("/hr/job-fairs/my-registrations")
+def get_my_hr_job_fair_registrations(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    registrations = (
+        db.query(HRJobFairRegistration)
+        .filter(
+            HRJobFairRegistration.email == current_user.email
+        )
+        .all()
+    )
+
+    result = []
+
+    for reg in registrations:
+
+        job_fair = (
+            db.query(JobFair)
+            .filter(
+                JobFair.id == reg.job_fair_id
+            )
+            .first()
+        )
+
+        roles = (
+            db.query(HRJobFairRole)
+            .filter(
+                HRJobFairRole.registration_id == reg.id
+            )
+            .all()
+        )
+
+        result.append({
+            "registration_id": reg.id,
+            "job_fair_id": job_fair.id,
+            "title": job_fair.title,
+            "organization_name": job_fair.organization_name,
+            "start_date": job_fair.start_date,
+            "end_date": job_fair.end_date,
+            "location": job_fair.location,
+            "company_name": reg.company_name,
+            "registered_on": reg.created_at,
+            "roles": roles
+        })
+
+    return result

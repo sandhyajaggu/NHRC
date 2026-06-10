@@ -9,12 +9,15 @@ from app.models.black_profile import BlackProfile
 from app.models.board_member import BoardMember
 from app.models.event_job_role import EventJobRole
 from app.models.event_registration import EventRegistration
+from app.models.hr_job_fair_registration import HRJobFairRegistration
+from app.models.hr_job_fair_role import HRJobFairRole
 from app.models.job import Job
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
 from app.models.member import Member
 from app.models.member_benefit import MemberBenefit
 from app.models.service_event import ServiceEvent
+from app.models.student_job_fair_registration import StudentJobFairRegistration
 from app.models.training_program import TrainingProgram
 from app.models.training_registration import TrainingRegistration
 from app.models.user import User
@@ -22,7 +25,7 @@ from app.schemas.black_profile import BlackProfileCreate, BlackProfileResponse, 
 from app.schemas.board_member import BoardMemberResponse, BoardMemberCreate
 from app.schemas.event_job_role import EventJobRoleCreate
 from app.schemas.job import JobCreate, JobUpdate
-from app.schemas.jobfair import JobFairCreate, JobFairResponse
+from app.schemas.jobfair import JobFairCreate, JobFairResponse, JobFairUpdate
 from app.schemas.member_benefit import BenefitBulkDelete, BenefitStatusUpdate, MemberBenefitCreate, MemberBenefitResponse, MemberBenefitUpdate
 from app.schemas.training import TrainingCreate
 from app.schemas.training_registration_create import TrainingRegistrationCreate
@@ -545,6 +548,9 @@ def create_event(
     db.refresh(event)
 
     return event
+from app.models.job_fair import JobFair
+
+
 @router.post(
     "/admin/job-fairs/create",
     response_model=JobFairResponse
@@ -833,6 +839,139 @@ def get_all_job_fairs(db: Session = Depends(get_db)):
         }
         for fair in fairs
     ]
+@router.get(
+    "/admin/job-fairs/{job_fair_id}",
+    response_model=JobFairResponse
+)
+def get_job_fair_by_id(
+    job_fair_id: int,
+    db: Session = Depends(get_db)
+):
+    job_fair = (
+        db.query(JobFairResponse)
+        .filter(JobFair.id == job_fair_id)
+        .first()
+    )
+
+    if not job_fair:
+        raise HTTPException(
+            status_code=404,
+            detail="Job Fair not found"
+        )
+
+    return job_fair
+
+
+
+@router.get("/admin/job-fairs/registrations")
+def get_all_job_fair_registrations(
+    db: Session = Depends(get_db)
+):
+
+    student_registrations = (
+        db.query(StudentJobFairRegistration)
+        .all()
+    )
+
+    hr_registrations = (
+        db.query(HRJobFairRegistration)
+        .all()
+    )
+
+    hr_data = []
+
+    for hr in hr_registrations:
+
+        roles = (
+            db.query(HRJobFairRole)
+            .filter(
+                HRJobFairRole.registration_id == hr.id
+            )
+            .all()
+        )
+
+        hr_data.append({
+            "id": hr.id,
+            "job_fair_id": hr.job_fair_id,
+            "company_name": hr.company_name,
+            "company_url": hr.company_url,
+            "full_name": hr.full_name,
+            "email": hr.email,
+            "phone": hr.phone,
+            "nhrc_id": hr.nhrc_id,
+            "receive_updates": hr.receive_updates,
+            "created_at": hr.created_at,
+            "roles": roles
+        })
+
+    return {
+        "total_students": len(student_registrations),
+        "total_companies": len(hr_registrations),
+        "student_registrations": student_registrations,
+        "hr_registrations": hr_data
+    }
+@router.put(
+    "/admin/job-fairs/{job_fair_id}",
+    response_model=JobFairResponse
+)
+def update_job_fair(
+    job_fair_id: int,
+    payload: JobFairUpdate,
+    db: Session = Depends(get_db)
+):
+    job_fair = (
+        db.query(JobFair)
+        .filter(JobFair.id == job_fair_id)
+        .first()
+    )
+
+    if not job_fair:
+        raise HTTPException(
+            status_code=404,
+            detail="Job Fair not found"
+        )
+
+    update_data = payload.model_dump(
+        exclude_unset=True
+    )
+
+    for key, value in update_data.items():
+        setattr(
+            job_fair,
+            key,
+            value
+        )
+
+    db.commit()
+    db.refresh(job_fair)
+
+    return job_fair
+
+@router.delete(
+    "/admin/job-fairs/{job_fair_id}"
+)
+def delete_job_fair(
+    job_fair_id: int,
+    db: Session = Depends(get_db)
+):
+    job_fair = (
+        db.query(JobFair)
+        .filter(JobFair.id == job_fair_id)
+        .first()
+    )
+
+    if not job_fair:
+        raise HTTPException(
+            status_code=404,
+            detail="Job Fair not found"
+        )
+
+    db.delete(job_fair)
+    db.commit()
+
+    return {
+        "message": "Job Fair deleted successfully"
+    }
 
 @router.post("/training/create")
 def create_training(

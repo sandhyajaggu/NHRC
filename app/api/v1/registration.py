@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 from app.core.security import get_current_user
 from app.db.session import get_db
 from app.models.event_registration import EventRegistration
+from app.models.job_fair import JobFair
 from app.models.training_registration import TrainingRegistration
+from app.schemas.jobfair import JobFairCreate, JobFairResponse, JobFairUpdate
 from app.schemas.registration import RegistrationCreate
 from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.models.training_program import TrainingProgram
@@ -248,3 +250,4 @@ def register_training(
         "message": "Training Registration Successful",
         "registration_id": registration.id
     }
+
