@@ -7,8 +7,10 @@ from app.core.dependencies import (
     get_current_admin
 )
 
+from app.models.talent_publication import TalentPublication
 from app.schemas.talent_publication import (
     TalentPublicationCreate,
+    TalentPublicationResponse,
     TalentPublicationUpdate,
     TalentPublicationConfigSchema
 )
@@ -57,9 +59,10 @@ def get_one(
         publication_id
     )
 @router.put(
-    "/admin/talent-publications/{publication_id}"
+    "/admin/talent-publications/{publication_id}",
+    response_model=TalentPublicationResponse
 )
-def update(
+def update_talent_publication(
     publication_id: int,
     payload: TalentPublicationUpdate,
     db: Session = Depends(get_db),
@@ -70,7 +73,6 @@ def update(
         publication_id,
         payload
     )
-
 @router.delete(
     "/admin/talent-publications/{publication_id}"
 )
@@ -113,3 +115,15 @@ def landing_page(
     db: Session = Depends(get_db)
 ):
     return get_landing_page_data(db)
+@router.get(
+    "/talent-publications",
+    response_model=list[TalentPublicationResponse]
+)
+def get_all_talent_publications(
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(TalentPublication)
+        .order_by(TalentPublication.display_order.asc())
+        .all()
+    )

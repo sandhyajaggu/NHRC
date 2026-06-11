@@ -10,8 +10,18 @@ def create_publication(
 ):
     publication = TalentPublication(
         title=payload.title,
-        cover_image=payload.cover_image,
-        pdf_file=payload.pdf_file,
+
+        banner_image_1=payload.banner_image_1,
+        banner_image_2=payload.banner_image_2,
+        banner_image_3=payload.banner_image_3,
+        banner_image_4=payload.banner_image_4,
+
+        document_1=payload.document_1,
+        document_2=payload.document_2,
+        document_3=payload.document_3,
+        document_4=payload.document_4,
+
+        youtube_url=payload.youtube_url,
         display_order=payload.display_order
     )
 
@@ -23,12 +33,12 @@ def create_publication(
 
 from fastapi import HTTPException
 
-
 def update_publication(
     db,
     publication_id,
     payload
 ):
+
     publication = (
         db.query(TalentPublication)
         .filter(
@@ -48,7 +58,11 @@ def update_publication(
     )
 
     for key, value in update_data.items():
-        setattr(publication, key, value)
+        setattr(
+            publication,
+            key,
+            value
+        )
 
     db.commit()
     db.refresh(publication)
@@ -140,27 +154,11 @@ def get_config(db):
 
 def get_landing_page_data(db):
 
-    config = (
-        db.query(TalentPublicationConfig)
-        .first()
-    )
-
     publications = (
         db.query(TalentPublication)
-        .filter(
-            TalentPublication.is_active == True
-        )
-        .order_by(
-            TalentPublication.display_order.asc()
-        )
+        .filter(TalentPublication.is_active == True)
+        .order_by(TalentPublication.display_order.asc())
         .all()
     )
 
-    return {
-        "youtube_url": (
-            config.youtube_url
-            if config
-            else None
-        ),
-        "publications": publications
-    }
+    return publications

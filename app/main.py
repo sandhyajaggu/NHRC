@@ -19,6 +19,9 @@ from app.api.v1 import member_benefits
 from app.api.v1 import talent_publication
 from app.api.v1 import black_profile
 from fastapi.staticfiles import StaticFiles
+from app.api.v1 import talent_publications_upload
+from app.api.v1 import talent_publication
+
 
 
 
@@ -68,6 +71,7 @@ def custom_openapi():
 
 
 app.openapi = custom_openapi
+app.include_router(talent_publications_upload.router)
 
 app.include_router(membership.router)
 app.include_router(auth.router)
@@ -84,7 +88,6 @@ app.include_router(member_benefits.router)
 
 app.include_router(black_profile.router)
 
-app.include_router(talent_publication.router)
 from fastapi.staticfiles import StaticFiles
 
 app.mount(
@@ -92,9 +95,9 @@ app.mount(
     StaticFiles(directory="uploads"),
     name="uploads"
 )
-from app.api.v1 import job_fair_upload
 
-app.include_router(job_fair_upload.router)
+app.include_router(talent_publications_upload.router)
+app.include_router(talent_publication.router)
 
 
 
