@@ -784,14 +784,24 @@ def get_job_fair_registrations(
     admin=Depends(get_current_admin)
 ):
 
-    registrations = db.query(EventRegistration).filter(
-        EventRegistration.job_fair_id == job_fair_id
-    ).all()
+    student_registrations = (
+        db.query(StudentJobFairRegistration)
+        .filter(StudentJobFairRegistration.job_fair_id == job_fair_id)
+        .all()
+    )
+
+    hr_registrations = (
+        db.query(HRJobFairRegistration)
+        .filter(HRJobFairRegistration.job_fair_id == job_fair_id)
+        .all()
+    )
 
     return {
         "job_fair_id": job_fair_id,
-        "total_registrations": len(registrations),
-        "registrations": registrations
+        "total_students": len(student_registrations),
+        "total_companies": len(hr_registrations),
+        "student_registrations": student_registrations,
+        "hr_registrations": hr_registrations
     }
 @router.get("/events")
 def get_all_events(
