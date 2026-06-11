@@ -17,7 +17,15 @@ router = APIRouter(
     tags=["Upload"]
 )
 
+@router.get("/debug/uploads")
+def debug_uploads():
+    import os
 
+    return {
+        "path": os.path.abspath("uploads"),
+        "exists": os.path.exists("uploads"),
+        "files": os.listdir("uploads") if os.path.exists("uploads") else []
+    }
 @router.post("/")
 async def upload_file(
     membership_id: str = Form(...),
