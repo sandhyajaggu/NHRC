@@ -26,6 +26,17 @@ def debug_uploads():
         "exists": os.path.exists("uploads"),
         "files": os.listdir("uploads") if os.path.exists("uploads") else []
     }
+@router.get("/upload/check")
+def check_file():
+
+    filename = "NHRC-STU-018_image_signature.jpg"
+
+    path = os.path.join("uploads", filename)
+
+    return {
+        "exists": os.path.exists(path),
+        "absolute_path": os.path.abspath(path)
+    }
 @router.post("/")
 async def upload_file(
     membership_id: str = Form(...),
