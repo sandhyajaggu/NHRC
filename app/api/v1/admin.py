@@ -651,7 +651,7 @@ def get_all_registrations(
         "registrations": result
     }
 
-
+'''
 @router.post("/job-fairs/{job_fair_id}/roles")
 def add_job_role(
     job_fair_id: int,
@@ -679,7 +679,7 @@ def add_job_role(
     db.refresh(role)
 
     return role
-
+'''
 
 @router.delete("/events/{event_id}")
 def delete_event(
@@ -803,6 +803,157 @@ def get_job_fair_registrations(
         "student_registrations": student_registrations,
         "hr_registrations": hr_registrations
     }
+@router.put(
+    "/job-fairs/hr-registration/{registration_id}/approve"
+)
+def approve_hr_registration(
+    registration_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    registration = (
+        db.query(HRJobFairRegistration)
+        .filter(
+            HRJobFairRegistration.id == registration_id
+        )
+        .first()
+    )
+
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="Registration not found"
+        )
+
+    registration.status = "APPROVED"
+
+    db.commit()
+
+    return {
+        "message": "HR registration approved"
+    }
+
+@router.put(
+    "/job-fairs/hr-registration/{registration_id}/reject"
+)
+def reject_hr_registration(
+    registration_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    registration = (
+        db.query(HRJobFairRegistration)
+        .filter(
+            HRJobFairRegistration.id == registration_id
+        )
+        .first()
+    )
+
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="Registration not found"
+        )
+
+    registration.status = "REJECTED"
+
+    db.commit()
+
+    return {
+        "message": "HR registration rejected"
+    }
+
+@router.put(
+    "/job-fairs/student-registration/{registration_id}/approve"
+)
+def approve_student_registration(
+    registration_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    registration = (
+        db.query(StudentJobFairRegistration)
+        .filter(
+            StudentJobFairRegistration.id == registration_id
+        )
+        .first()
+    )
+
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="Registration not found"
+        )
+
+    registration.status = "APPROVED"
+
+    db.commit()
+
+    return {
+        "message": "Student registration approved"
+    }
+
+@router.put(
+    "/job-fairs/student-registration/{registration_id}/reject"
+)
+def reject_student_registration(
+    registration_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    registration = (
+        db.query(StudentJobFairRegistration)
+        .filter(
+            StudentJobFairRegistration.id == registration_id
+        )
+        .first()
+    )
+
+    if not registration:
+        raise HTTPException(
+            status_code=404,
+            detail="Registration not found"
+        )
+
+    registration.status = "REJECTED"
+
+    db.commit()
+
+    return {
+        "message": "Student registration rejected"
+    }
+
+@router.get("/job-fairs/hr-registrations/pending")
+def get_pending_hr_registrations(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    return (
+        db.query(HRJobFairRegistration)
+        .filter(
+            HRJobFairRegistration.status == "PENDING"
+        )
+        .all()
+    )
+
+@router.get("/job-fairs/student-registrations/pending")
+def get_pending_student_registrations(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+
+    return (
+        db.query(StudentJobFairRegistration)
+        .filter(
+            StudentJobFairRegistration.status == "PENDING"
+        )
+        .all()
+    )
 @router.get("/events")
 def get_all_events(
     db: Session = Depends(get_db),

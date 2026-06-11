@@ -195,6 +195,40 @@ def apply_job(
         "message": "Applied Successfully",
         "application_id": application.id
     }
+@router.get("/my-applications")
+def get_my_applications(
+    db: Session = Depends(get_db),
+    student = Depends(get_current_student)
+):
+
+    applications = (
+        db.query(JobApplication, Job)
+        .join(
+            Job,
+            Job.id == JobApplication.job_id
+        )
+        .filter(
+            JobApplication.student_id == student.id
+        )
+        .all()
+    )
+
+    return {
+        "student_id": student.id,
+        "total_applications": len(applications),
+        "applications": [
+            {
+                "application_id": application.id,
+                "job_id": job.id,
+                "job_title": job.job_title,
+                "company_name": job.company_name,
+                "location": job.location,
+                "status": application.status,
+                "applied_at": application.created_at
+            }
+            for application, job in applications
+        ]
+    }
 @router.get("/events")
 def get_events(
     db: Session = Depends(get_db)

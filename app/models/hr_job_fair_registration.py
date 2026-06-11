@@ -62,3 +62,8 @@ class HRJobFairRegistration(Base):
         DateTime,
         default=datetime.utcnow
     )
+    status = Column(
+    String(20),
+    nullable=False,
+    default="PENDING"
+)
