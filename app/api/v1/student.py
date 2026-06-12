@@ -198,7 +198,7 @@ def apply_job(
 @router.get("/my-applications")
 def get_my_applications(
     db: Session = Depends(get_db),
-    student = Depends(get_current_student)
+    student=Depends(get_current_student)
 ):
 
     applications = (
@@ -214,21 +214,21 @@ def get_my_applications(
     )
 
     return {
-        "student_id": student.id,
-        "total_applications": len(applications),
-        "applications": [
-            {
-                "application_id": application.id,
-                "job_id": job.id,
-                "job_title": job.job_title,
-                "company_name": job.company_name,
-                "location": job.location,
-                "status": application.status,
-                "applied_at": application.created_at
-            }
-            for application, job in applications
-        ]
-    }
+    "student_id": student.id,
+    "total_applications": len(applications),
+    "applications": [
+        {
+            "application_id": application.id,
+            "job_id": job.id,
+            "job_title": job.title,
+            "company_name": job.company_name,
+            "location": job.location,
+            "status": application.status,
+            "applied_at": application.applied_at
+        }
+        for application, job in applications
+    ]
+}
 @router.get("/events")
 def get_events(
     db: Session = Depends(get_db)
