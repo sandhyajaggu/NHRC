@@ -1,4 +1,5 @@
 from enum import member
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, validator
 
@@ -41,3 +42,14 @@ class StudentAutonomousCreate(BaseModel):
     password: str
     confirm_password: str
     captcha_answer: int
+
+
+class StudentProfileUpdate(BaseModel):
+    university_name: Optional[str] = None
+    college_name: Optional[str] = None
+    college_code: Optional[str] = None
+    qualification: Optional[str] = None
+    department: Optional[str] = None
+    start_year: Optional[int] = None
+    end_year: Optional[int] = None
+    location: Optional[str] = None

@@ -8,13 +8,17 @@ from app.core.security import get_current_student, get_current_user
 from app.models.job import Job
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
+from app.models.member import Member
 from app.models.service_event import ServiceEvent
+from app.models.student import StudentAutonomousDetails, StudentUniversityDetails
 from app.models.student_job_fair_registration import StudentJobFairRegistration
 from app.models.training_registration import TrainingRegistration
+from app.models.user import User
 from app.schemas.job_application import ApplyJobSchema
 from app.schemas.job_fair_registration import StudentJobFairRegistrationCreate, StudentJobFairRegistrationResponse
 from app.schemas.jobfair import JobFairResponse
 from app.schemas.registration import RegistrationCreate
+from app.schemas.student import StudentProfileUpdate
 from app.schemas.training_registration_create import TrainingRegistrationCreate
 from app.services.event_service import EventService
 from app.services.registration_service import RegistrationService
@@ -23,6 +27,149 @@ router = APIRouter(
     prefix="/student",
     tags=["STUDENT"]
 )
+
+@router.get("/profile")
+def get_student_profile(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Get member record using membership_id from JWT
+    member = db.query(Member).filter(
+        Member.membership_id == current_user.membership_id
+    ).first()
+
+    if not member:
+        raise HTTPException(
+            status_code=404,
+            detail="Member not found"
+        )
+
+    # Check university student
+    university_student = db.query(StudentUniversityDetails).filter(
+        StudentUniversityDetails.member_id == member.id
+    ).first()
+
+    if university_student:
+        return {
+            "success": True,
+            "student_type": "university",
+            "data": {
+                "membership_id": member.membership_id,
+                "email": university_student.email,
+                "university_name": university_student.university_name,
+                "college_name": university_student.college_name,
+                "college_code": university_student.college_code,
+                "qualification": university_student.qualification,
+                "department": university_student.department,
+                "start_year": university_student.start_year,
+                "end_year": university_student.end_year,
+                "location": university_student.location,
+                "id_front": university_student.id_front,
+                "id_back": university_student.id_back
+            }
+        }
+
+    # Check autonomous student
+    autonomous_student = db.query(StudentAutonomousDetails).filter(
+        StudentAutonomousDetails.member_id == member.id
+    ).first()
+
+    if autonomous_student:
+        return {
+            "success": True,
+            "student_type": "autonomous",
+            "data": {
+                "membership_id": member.membership_id,
+                "email": autonomous_student.email,
+                "college_name": autonomous_student.college_name,
+                "college_code": autonomous_student.college_code,
+                "qualification": autonomous_student.qualification,
+                "department": autonomous_student.department,
+                "start_year": autonomous_student.start_year,
+                "end_year": autonomous_student.end_year,
+                "location": autonomous_student.location,
+                "id_front": autonomous_student.id_front,
+                "id_back": autonomous_student.id_back
+            }
+        }
+
+    raise HTTPException(
+        status_code=404,
+        detail="Student profile not found"
+    )
+
+@router.put("/profile")
+def update_student_profile(
+    payload: StudentProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Get member record
+    member = db.query(Member).filter(
+        Member.membership_id == current_user.membership_id
+    ).first()
+
+    if not member:
+        raise HTTPException(
+            status_code=404,
+            detail="Member not found"
+        )
+
+    # Find university student
+    student = db.query(StudentUniversityDetails).filter(
+        StudentUniversityDetails.member_id == member.id
+    ).first()
+
+    student_type = "university"
+
+    # If not found, find autonomous student
+    if not student:
+        student = db.query(StudentAutonomousDetails).filter(
+            StudentAutonomousDetails.member_id == member.id
+        ).first()
+
+        student_type = "autonomous"
+
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="Student profile not found"
+        )
+
+    # Update only provided fields
+    update_data = payload.model_dump(exclude_unset=True)
+
+    # Prevent university_name update for autonomous students
+    if student_type == "autonomous":
+        update_data.pop("university_name", None)
+
+    for field, value in update_data.items():
+        setattr(student, field, value)
+
+    db.commit()
+    db.refresh(student)
+
+    response_data = {
+        "membership_id": member.membership_id,
+        "email": student.email,
+        "college_name": student.college_name,
+        "college_code": student.college_code,
+        "qualification": student.qualification,
+        "department": student.department,
+        "start_year": student.start_year,
+        "end_year": student.end_year,
+        "location": student.location
+    }
+
+    if student_type == "university":
+        response_data["university_name"] = student.university_name
+
+    return {
+        "success": True,
+        "message": "Student profile updated successfully",
+        "student_type": student_type,
+        "data": response_data
+    }
 
 @router.get("/all")
 def get_all_jobs(

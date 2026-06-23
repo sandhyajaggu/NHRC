@@ -6,15 +6,19 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.black_profile import BlackProfile
+from app.models.employee import Employee
 from app.models.event_job_role import EventJobRole
 from app.models.hr_job_fair_registration import HRJobFairRegistration
 from app.models.hr_job_fair_role import HRJobFairRole
 from app.models.job_application import JobApplication
 from app.models.job_fair import JobFair
+from app.models.member import Member
 from app.models.service_event import ServiceEvent
 from app.models.training_program import TrainingProgram
 from app.models.training_registration import TrainingRegistration
+from app.models.user import User
 from app.schemas.black_profile import BlackProfileCreate, BlackProfileUpdate,BlackProfileResponse
+from app.schemas.hr import HRProfileUpdate
 from app.schemas.job import JobCreate, JobUpdate
 from app.models.job import Job
 from app.core.security import get_current_employee, get_current_user
@@ -46,6 +50,106 @@ def hr_dashboard(
         "jobs": jobs
     }
 
+
+@router.get("/profile")
+def get_hr_profile(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    member = db.query(Member).filter(
+        Member.membership_id == current_user.membership_id
+    ).first()
+
+    if not member:
+        raise HTTPException(
+            status_code=404,
+            detail="Member not found"
+        )
+
+    employee = db.query(Employee).filter(
+        Employee.member_id == member.id
+    ).first()
+
+    if not employee:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee profile not found"
+        )
+
+    return {
+        "success": True,
+        "data": {
+            "membership_id": member.membership_id,
+            "organization_name": employee.organization_name,
+            "industry": employee.industry,
+            "department": employee.department,
+            "designation": employee.designation,
+            "company_website": employee.company_website,
+            "working_location": employee.working_location,
+            "company_strength": employee.company_strength,
+            "employee_id": employee.employee_id,
+            "experience": employee.experience,
+            "official_email": employee.official_email,
+            "user_email": employee.user_email
+        }
+    }
+
+@router.put("/profile")
+def update_hr_profile(
+    payload: HRProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Get member record using membership_id from JWT
+    member = db.query(Member).filter(
+        Member.membership_id == current_user.membership_id
+    ).first()
+
+    if not member:
+        raise HTTPException(
+            status_code=404,
+            detail="Member not found"
+        )
+
+    # Get employee profile
+    employee = db.query(Employee).filter(
+        Employee.member_id == member.id
+    ).first()
+
+    if not employee:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee profile not found"
+        )
+
+    # Update only provided fields
+    update_data = payload.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(employee, field, value)
+
+    db.commit()
+    db.refresh(employee)
+
+    return {
+        "success": True,
+        "message": "HR profile updated successfully",
+        "data": {
+            "membership_id": member.membership_id,
+            "organization_name": employee.organization_name,
+            "industry": employee.industry,
+            "department": employee.department,
+            "designation": employee.designation,
+            "company_website": employee.company_website,
+            "working_location": employee.working_location,
+            "company_strength": employee.company_strength,
+            "employee_id": employee.employee_id,
+            "experience": employee.experience,
+            "official_email": employee.official_email,
+            "user_email": employee.user_email
+        }
+    }
 @router.post("/create")
 def create_hr_job(
     payload: JobCreate,
