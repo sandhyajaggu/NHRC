@@ -1,3 +1,4 @@
+from datetime import date
 from enum import member
 from typing import Optional
 
@@ -45,6 +46,20 @@ class StudentAutonomousCreate(BaseModel):
 
 
 class StudentProfileUpdate(BaseModel):
+
+    # Member Table
+    full_name: Optional[str] = None
+    gender: Optional[str] = None
+    dob: Optional[date] = None
+    state: Optional[str] = None
+    district: Optional[str] = None
+    pincode: Optional[str] = None
+    mobile: Optional[str] = None
+    blood_group: Optional[str] = None
+    profile_pic: Optional[str] = None
+    whatsapp_notification: Optional[bool] = None
+
+    # Student Table
     university_name: Optional[str] = None
     college_name: Optional[str] = None
     college_code: Optional[str] = None

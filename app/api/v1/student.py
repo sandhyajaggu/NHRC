@@ -30,10 +30,9 @@ router = APIRouter(
 
 @router.get("/profile")
 def get_student_profile(
-    current_user: User = Depends(get_current_user),
+    current_user: Member = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Get member record using membership_id from JWT
     member = db.query(Member).filter(
         Member.membership_id == current_user.membership_id
     ).first()
@@ -44,7 +43,6 @@ def get_student_profile(
             detail="Member not found"
         )
 
-    # Check university student
     university_student = db.query(StudentUniversityDetails).filter(
         StudentUniversityDetails.member_id == member.id
     ).first()
@@ -53,9 +51,23 @@ def get_student_profile(
         return {
             "success": True,
             "student_type": "university",
-            "data": {
+            "personal_details": {
                 "membership_id": member.membership_id,
-                "email": university_student.email,
+                "full_name": member.full_name,
+                "gender": member.gender,
+                "dob": member.dob,
+                "state": member.state,
+                "district": member.district,
+                "pincode": member.pincode,
+                "email": member.email,
+                "mobile": member.mobile,
+                "blood_group": member.blood_group,
+                "profile_pic": member.profile_pic,
+                "candidate_type": member.candidate_type,
+                "status": member.status,
+                "created_at": member.created_at
+            },
+            "education_details": {
                 "university_name": university_student.university_name,
                 "college_name": university_student.college_name,
                 "college_code": university_student.college_code,
@@ -63,13 +75,14 @@ def get_student_profile(
                 "department": university_student.department,
                 "start_year": university_student.start_year,
                 "end_year": university_student.end_year,
-                "location": university_student.location,
+                "location": university_student.location
+            },
+            "documents": {
                 "id_front": university_student.id_front,
                 "id_back": university_student.id_back
             }
         }
 
-    # Check autonomous student
     autonomous_student = db.query(StudentAutonomousDetails).filter(
         StudentAutonomousDetails.member_id == member.id
     ).first()
@@ -78,16 +91,32 @@ def get_student_profile(
         return {
             "success": True,
             "student_type": "autonomous",
-            "data": {
+            "personal_details": {
                 "membership_id": member.membership_id,
-                "email": autonomous_student.email,
+                "full_name": member.full_name,
+                "gender": member.gender,
+                "dob": member.dob,
+                "state": member.state,
+                "district": member.district,
+                "pincode": member.pincode,
+                "email": member.email,
+                "mobile": member.mobile,
+                "blood_group": member.blood_group,
+                "profile_pic": member.profile_pic,
+                "candidate_type": member.candidate_type,
+                "status": member.status,
+                "created_at": member.created_at
+            },
+            "education_details": {
                 "college_name": autonomous_student.college_name,
                 "college_code": autonomous_student.college_code,
                 "qualification": autonomous_student.qualification,
                 "department": autonomous_student.department,
                 "start_year": autonomous_student.start_year,
                 "end_year": autonomous_student.end_year,
-                "location": autonomous_student.location,
+                "location": autonomous_student.location
+            },
+            "documents": {
                 "id_front": autonomous_student.id_front,
                 "id_back": autonomous_student.id_back
             }
@@ -97,14 +126,12 @@ def get_student_profile(
         status_code=404,
         detail="Student profile not found"
     )
-
 @router.put("/profile")
 def update_student_profile(
     payload: StudentProfileUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: Member = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Get member record
     member = db.query(Member).filter(
         Member.membership_id == current_user.membership_id
     ).first()
@@ -115,20 +142,14 @@ def update_student_profile(
             detail="Member not found"
         )
 
-    # Find university student
     student = db.query(StudentUniversityDetails).filter(
         StudentUniversityDetails.member_id == member.id
     ).first()
 
-    student_type = "university"
-
-    # If not found, find autonomous student
     if not student:
         student = db.query(StudentAutonomousDetails).filter(
             StudentAutonomousDetails.member_id == member.id
         ).first()
-
-        student_type = "autonomous"
 
     if not student:
         raise HTTPException(
@@ -136,41 +157,50 @@ def update_student_profile(
             detail="Student profile not found"
         )
 
-    # Update only provided fields
-    update_data = payload.model_dump(exclude_unset=True)
+    data = payload.model_dump(exclude_unset=True)
 
-    # Prevent university_name update for autonomous students
-    if student_type == "autonomous":
-        update_data.pop("university_name", None)
+    # Update Member fields
+    member_fields = [
+        "full_name",
+        "gender",
+        "dob",
+        "state",
+        "district",
+        "pincode",
+        "mobile",
+        "blood_group",
+        "profile_pic",
+        "whatsapp_notification"
+    ]
 
-    for field, value in update_data.items():
-        setattr(student, field, value)
+    for field in member_fields:
+        if field in data:
+            setattr(member, field, data[field])
+
+    # Update Student fields
+    student_fields = [
+        "university_name",
+        "college_name",
+        "college_code",
+        "qualification",
+        "department",
+        "start_year",
+        "end_year",
+        "location"
+    ]
+
+    for field in student_fields:
+        if field in data and hasattr(student, field):
+            setattr(student, field, data[field])
 
     db.commit()
+    db.refresh(member)
     db.refresh(student)
-
-    response_data = {
-        "membership_id": member.membership_id,
-        "email": student.email,
-        "college_name": student.college_name,
-        "college_code": student.college_code,
-        "qualification": student.qualification,
-        "department": student.department,
-        "start_year": student.start_year,
-        "end_year": student.end_year,
-        "location": student.location
-    }
-
-    if student_type == "university":
-        response_data["university_name"] = student.university_name
 
     return {
         "success": True,
-        "message": "Student profile updated successfully",
-        "student_type": student_type,
-        "data": response_data
+        "message": "Student profile updated successfully"
     }
-
 @router.get("/all")
 def get_all_jobs(
     db: Session = Depends(get_db)

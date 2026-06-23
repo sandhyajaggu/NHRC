@@ -53,10 +53,9 @@ def hr_dashboard(
 
 @router.get("/profile")
 def get_hr_profile(
-    current_user: User = Depends(get_current_user),
+    current_user: Member = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-
     member = db.query(Member).filter(
         Member.membership_id == current_user.membership_id
     ).first()
@@ -79,8 +78,23 @@ def get_hr_profile(
 
     return {
         "success": True,
-        "data": {
+        "personal_details": {
             "membership_id": member.membership_id,
+            "full_name": member.full_name,
+            "gender": member.gender,
+            "dob": member.dob,
+            "state": member.state,
+            "district": member.district,
+            "pincode": member.pincode,
+            "email": member.email,
+            "mobile": member.mobile,
+            "blood_group": member.blood_group,
+            "profile_pic": member.profile_pic,
+            "candidate_type": member.candidate_type,
+            "status": member.status,
+            "created_at": member.created_at
+        },
+        "professional_details": {
             "organization_name": employee.organization_name,
             "industry": employee.industry,
             "department": employee.department,
@@ -91,17 +105,21 @@ def get_hr_profile(
             "employee_id": employee.employee_id,
             "experience": employee.experience,
             "official_email": employee.official_email,
-            "user_email": employee.user_email
+            "user_email": employee.user_email,
+            "referral_id": employee.referral_id
+        },
+        "documents": {
+            "id_card_front": employee.id_card_front,
+            "id_card_back": employee.id_card_back
         }
     }
-
 @router.put("/profile")
 def update_hr_profile(
     payload: HRProfileUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: Member = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Get member record using membership_id from JWT
+    # Get Member
     member = db.query(Member).filter(
         Member.membership_id == current_user.membership_id
     ).first()
@@ -112,7 +130,7 @@ def update_hr_profile(
             detail="Member not found"
         )
 
-    # Get employee profile
+    # Get Employee
     employee = db.query(Employee).filter(
         Employee.member_id == member.id
     ).first()
@@ -123,31 +141,88 @@ def update_hr_profile(
             detail="Employee profile not found"
         )
 
-    # Update only provided fields
-    update_data = payload.model_dump(exclude_unset=True)
+    data = payload.model_dump(exclude_unset=True)
 
-    for field, value in update_data.items():
-        setattr(employee, field, value)
+    # ======================
+    # Update Member Table
+    # ======================
+
+    member_fields = [
+        "full_name",
+        "gender",
+        "dob",
+        "state",
+        "district",
+        "pincode",
+        "mobile",
+        "blood_group",
+        "profile_pic",
+        "whatsapp_notification"
+    ]
+
+    for field in member_fields:
+        if field in data:
+            setattr(member, field, data[field])
+
+    # ======================
+    # Update Employee Table
+    # ======================
+
+    employee_fields = [
+        "organization_name",
+        "industry",
+        "department",
+        "designation",
+        "company_website",
+        "working_location",
+        "company_strength",
+        "employee_id",
+        "experience",
+        "referral_id",
+        "user_email"
+    ]
+
+    for field in employee_fields:
+        if field in data:
+            setattr(employee, field, data[field])
 
     db.commit()
+    db.refresh(member)
     db.refresh(employee)
 
     return {
         "success": True,
         "message": "HR profile updated successfully",
         "data": {
-            "membership_id": member.membership_id,
-            "organization_name": employee.organization_name,
-            "industry": employee.industry,
-            "department": employee.department,
-            "designation": employee.designation,
-            "company_website": employee.company_website,
-            "working_location": employee.working_location,
-            "company_strength": employee.company_strength,
-            "employee_id": employee.employee_id,
-            "experience": employee.experience,
-            "official_email": employee.official_email,
-            "user_email": employee.user_email
+            "personal_details": {
+                "membership_id": member.membership_id,
+                "full_name": member.full_name,
+                "gender": member.gender,
+                "dob": member.dob,
+                "state": member.state,
+                "district": member.district,
+                "pincode": member.pincode,
+                "email": member.email,
+                "mobile": member.mobile,
+                "blood_group": member.blood_group,
+                "profile_pic": member.profile_pic,
+                "whatsapp_notification": member.whatsapp_notification,
+                "candidate_type": member.candidate_type
+            },
+            "professional_details": {
+                "organization_name": employee.organization_name,
+                "industry": employee.industry,
+                "department": employee.department,
+                "designation": employee.designation,
+                "company_website": employee.company_website,
+                "working_location": employee.working_location,
+                "company_strength": employee.company_strength,
+                "employee_id": employee.employee_id,
+                "experience": employee.experience,
+                "official_email": employee.official_email,
+                "user_email": employee.user_email,
+                "referral_id": employee.referral_id
+            }
         }
     }
 @router.post("/create")
